@@ -1,0 +1,42 @@
+#include<stdio.h>
+
+main()
+{
+	// Integar
+		int x = 7; // declaration and initialization
+		int y = 8; // declaration and initialization
+		int z = 9; // declaration and initialization
+	
+		// single output
+		printf("The Number Is Equal to  %d \n", x);
+	
+		// multiple output 
+		printf("X = %d \t Y = %d \t Z = %d \n", x, y, z);
+	
+	// Float
+		float xx = 7.123; // declaration and initialization
+		float yy = 8.22; // declaration and initialization
+		float zz = 9; // declaration and initialization
+		
+		// single output
+		printf("The Number Is Equal to  %f \n", xx);
+		
+		// specific decimals
+		printf("The Number Is Equal to  %0.1f \n", xx);
+		
+		// multiple output 
+		printf("XX = %f \t YY = %f \t ZZ = %f \n", xx, yy, zz);
+		
+	// Double
+		float xxx = 7.123; // declaration and initialization
+		float yyy = 8.22; // declaration and initialization
+		float zzz = 9; // // declaration and initialization
+		
+		// single output
+		printf("The Number Is Equal to  %lf \n", xxx);
+		
+		// multiple output 
+		printf("XXX = %lf \t YYY = %lf \t ZZX = %lf", xxx, yyy, zzz);
+	
+
+}
