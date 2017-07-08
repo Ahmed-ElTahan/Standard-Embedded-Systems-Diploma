@@ -1,0 +1,8 @@
+	----------------------------- Program Description -----------------------------------------
+   Write a C code to ask the user to enter his grade and the program will print his rating based on the following table
+   
+   00<= grade < 50     -------> Failed
+   50<= grade < 65     -------> Normal
+   65<= grade < 75     -------> Good
+   75<= grade < 85     -------> Very good
+   85 <= grade         -------> Excellent
