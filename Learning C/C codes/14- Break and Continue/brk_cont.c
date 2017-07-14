@@ -15,7 +15,7 @@ main()
 	int i;
 	
 	// Write your instructions here.
-	printf("Printing numbers from 1 to 10 skipping (continue) 5 and break at 7 \n");
+	printf("Printing numbers from 1 to 10 skipping (continue) 5 and break after 7 \n");
 	for (i = 1; i<=10; i++)
 	{
 		if (i==5)
