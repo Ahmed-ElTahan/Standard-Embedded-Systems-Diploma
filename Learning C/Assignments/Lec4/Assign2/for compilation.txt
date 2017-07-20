@@ -1,0 +1,1 @@
+gcc main.c Add.c Subtract.c Multiply.c Divide.c And.c Or.c Not.c Xor.c reminder.c Increment.c Decrement.c
