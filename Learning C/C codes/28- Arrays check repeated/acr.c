@@ -33,12 +33,12 @@ void main(void)
 		{
 			printf("Please enter number %d : ", ( i + 1 ));
 			scanf("%d", &array[i]);
-			rep[i] = 1; // from intuition, each number entered exists at least once, if something repeated, add 1 each time you found it.
+			rep[i] = 1; // By intuition, each number entered exists at least once, if something repeated, add 1 each time you found it.
 		}
 		
-		// check element 1 to 2, then 1 to 3, ... 1 to 10. Then 2 to 3 (as 2 is compared to 1), then 2 to 4, ..., 2 to 10, .... till 9 to 10 --> using the 2 for loops
+		// compare element 1 to 2, then 1 to 3, ... 1 to 10. Then 2 to 3 (as 2 is compared to 1), then 2 to 4, ..., 2 to 10, .... till 9 to 10 --> using the 2 for loops
 		// the idea here is that choose a value (we agree on, let here val_agree = -1000) to put it at places where the number i is repeated so we dont count them repeated again as the condition
-		// if (rep[j + 1] == -1) {continue;}  but add the repeatition number to it as rep[i] = rep[i] + 1 
+		// if (rep[j + 1] == val_agree) {continue;}  but add the repeatition number to it as rep[i] = rep[i] + 1 
 		for ( i = 0; i < size; i++ )
 		{	
 			for (j = i; j < size - 1; j++) // -1 is because (jth + 1) element
