@@ -34,7 +34,7 @@ void main(void)
 			scanf("%d", &array[i]);
 		}
 		
-	for (i = 0; i < (size - 1); i++) // need size - 1 outer loops for repeatition of the swap searching loop
+	for (i = 0; i <= (size - 2); i++) // need (size - 2) outer loops for repeatition of the swap searching loop, complete searching
 	{
 			for (j = 0; j <= (size - i -1); j++) // (-1) because the (jth + 1) element, (-i) is for leave checking of the last element each loop as it complies the condition
 			{
