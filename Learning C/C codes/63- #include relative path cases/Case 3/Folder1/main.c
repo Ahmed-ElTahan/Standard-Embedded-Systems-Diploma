@@ -2,12 +2,14 @@
 
 /* 
 	----------------------------- Program Description -----------------------------------------
-
+	case 3: The header file in outer folder of the source file 
 */
 
 // Libraries
 #include<stdio.h> // Library to include c functions for the compiler.
 // User-defined header files
+#include"function.h" // include function
+
 // Type definition
 // Function prototype
 // Declared Structures (if Type definition)
@@ -21,5 +23,6 @@ void main(void)
 	// Write your instructions here.
 	// infinite loop  while(1){}
 	// Output
+	print(); // function declaerd in function.h
 	
 }
