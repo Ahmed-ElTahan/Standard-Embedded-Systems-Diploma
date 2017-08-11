@@ -6,8 +6,10 @@
 */
 
 // Libraries
-#include<stdio.h> // Library to include c functions for the compiler.
-// User-defined header files
+#include<stdio.h> // Library to include Basic C functions for the compiler.
+
+// User-defined header files #include
+// User-defined header files #define (Macros: Object / Fuction)
 // Type definition
 // Function prototype
 // Declared Structures (if Type definition)
