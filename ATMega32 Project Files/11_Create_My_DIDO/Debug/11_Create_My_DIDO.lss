@@ -1,0 +1,847 @@
+
+11_Create_My_DIDO.elf:     file format elf32-avr
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         00000540  00000000  00000000  00000054  2**1
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  1 .stab         0000060c  00000000  00000000  00000594  2**2
+                  CONTENTS, READONLY, DEBUGGING
+  2 .stabstr      0000039b  00000000  00000000  00000ba0  2**0
+                  CONTENTS, READONLY, DEBUGGING
+
+Disassembly of section .text:
+
+00000000 <__vectors>:
+   0:	0c 94 2a 00 	jmp	0x54	; 0x54 <__ctors_end>
+   4:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+   8:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+   c:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  10:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  14:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  18:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  1c:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  20:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  24:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  28:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  2c:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  30:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  34:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  38:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  3c:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  40:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  44:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  48:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  4c:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  50:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+
+00000054 <__ctors_end>:
+  54:	11 24       	eor	r1, r1
+  56:	1f be       	out	0x3f, r1	; 63
+  58:	cf e5       	ldi	r28, 0x5F	; 95
+  5a:	d8 e0       	ldi	r29, 0x08	; 8
+  5c:	de bf       	out	0x3e, r29	; 62
+  5e:	cd bf       	out	0x3d, r28	; 61
+  60:	0e 94 97 02 	call	0x52e	; 0x52e <main>
+  64:	0c 94 9e 02 	jmp	0x53c	; 0x53c <_exit>
+
+00000068 <__bad_interrupt>:
+  68:	0c 94 00 00 	jmp	0	; 0x0 <__vectors>
+
+0000006c <SetPinDirection>:
+*/
+#include"DDIO.h"
+
+// Function (1):  to set the pin number (0 to 31) direction as Input/Output
+void SetPinDirection(u8 PinNumber, u8 PinDirection)
+{
+  6c:	df 93       	push	r29
+  6e:	cf 93       	push	r28
+  70:	00 d0       	rcall	.+0      	; 0x72 <SetPinDirection+0x6>
+  72:	0f 92       	push	r0
+  74:	cd b7       	in	r28, 0x3d	; 61
+  76:	de b7       	in	r29, 0x3e	; 62
+  78:	8a 83       	std	Y+2, r24	; 0x02
+  7a:	6b 83       	std	Y+3, r22	; 0x03
+	u8 PortLetter = PinNumber/8; // to get the Port letter (0 for A, 1 for B, 2 for C, 3 for D)
+  7c:	8a 81       	ldd	r24, Y+2	; 0x02
+  7e:	86 95       	lsr	r24
+  80:	86 95       	lsr	r24
+  82:	86 95       	lsr	r24
+  84:	89 83       	std	Y+1, r24	; 0x01
+	// PinNumber%NUM gives the number of the pin in the port from 0 to 7
+
+	// 0 for port A
+		if (PortLetter == PortA_Letter)
+  86:	89 81       	ldd	r24, Y+1	; 0x01
+  88:	88 23       	and	r24, r24
+  8a:	b1 f5       	brne	.+108    	; 0xf8 <SetPinDirection+0x8c>
+		{
+			//DDRA
+			if (PinDirection == INPUT) // Input
+  8c:	8b 81       	ldd	r24, Y+3	; 0x03
+  8e:	88 23       	and	r24, r24
+  90:	c1 f4       	brne	.+48     	; 0xc2 <SetPinDirection+0x56>
+			{
+				CLR_BIT(DDRA, PinNumber%8);
+  92:	aa e3       	ldi	r26, 0x3A	; 58
+  94:	b0 e0       	ldi	r27, 0x00	; 0
+  96:	ea e3       	ldi	r30, 0x3A	; 58
+  98:	f0 e0       	ldi	r31, 0x00	; 0
+  9a:	80 81       	ld	r24, Z
+  9c:	48 2f       	mov	r20, r24
+  9e:	8a 81       	ldd	r24, Y+2	; 0x02
+  a0:	88 2f       	mov	r24, r24
+  a2:	90 e0       	ldi	r25, 0x00	; 0
+  a4:	9c 01       	movw	r18, r24
+  a6:	27 70       	andi	r18, 0x07	; 7
+  a8:	30 70       	andi	r19, 0x00	; 0
+  aa:	81 e0       	ldi	r24, 0x01	; 1
+  ac:	90 e0       	ldi	r25, 0x00	; 0
+  ae:	02 2e       	mov	r0, r18
+  b0:	02 c0       	rjmp	.+4      	; 0xb6 <SetPinDirection+0x4a>
+  b2:	88 0f       	add	r24, r24
+  b4:	99 1f       	adc	r25, r25
+  b6:	0a 94       	dec	r0
+  b8:	e2 f7       	brpl	.-8      	; 0xb2 <SetPinDirection+0x46>
+  ba:	80 95       	com	r24
+  bc:	84 23       	and	r24, r20
+  be:	8c 93       	st	X, r24
+  c0:	c4 c0       	rjmp	.+392    	; 0x24a <SetPinDirection+0x1de>
+			}
+			else if (PinDirection == OUTPUT) // Output
+  c2:	8b 81       	ldd	r24, Y+3	; 0x03
+  c4:	81 30       	cpi	r24, 0x01	; 1
+  c6:	09 f0       	breq	.+2      	; 0xca <SetPinDirection+0x5e>
+  c8:	c0 c0       	rjmp	.+384    	; 0x24a <SetPinDirection+0x1de>
+			{
+				SET_BIT(DDRA, PinNumber%NUM);
+  ca:	aa e3       	ldi	r26, 0x3A	; 58
+  cc:	b0 e0       	ldi	r27, 0x00	; 0
+  ce:	ea e3       	ldi	r30, 0x3A	; 58
+  d0:	f0 e0       	ldi	r31, 0x00	; 0
+  d2:	80 81       	ld	r24, Z
+  d4:	48 2f       	mov	r20, r24
+  d6:	8a 81       	ldd	r24, Y+2	; 0x02
+  d8:	88 2f       	mov	r24, r24
+  da:	90 e0       	ldi	r25, 0x00	; 0
+  dc:	9c 01       	movw	r18, r24
+  de:	27 70       	andi	r18, 0x07	; 7
+  e0:	30 70       	andi	r19, 0x00	; 0
+  e2:	81 e0       	ldi	r24, 0x01	; 1
+  e4:	90 e0       	ldi	r25, 0x00	; 0
+  e6:	02 2e       	mov	r0, r18
+  e8:	02 c0       	rjmp	.+4      	; 0xee <SetPinDirection+0x82>
+  ea:	88 0f       	add	r24, r24
+  ec:	99 1f       	adc	r25, r25
+  ee:	0a 94       	dec	r0
+  f0:	e2 f7       	brpl	.-8      	; 0xea <SetPinDirection+0x7e>
+  f2:	84 2b       	or	r24, r20
+  f4:	8c 93       	st	X, r24
+  f6:	a9 c0       	rjmp	.+338    	; 0x24a <SetPinDirection+0x1de>
+			}
+		}
+
+	// 1 for port B
+		else if (PortLetter == PortB_Letter)
+  f8:	89 81       	ldd	r24, Y+1	; 0x01
+  fa:	81 30       	cpi	r24, 0x01	; 1
+  fc:	b1 f5       	brne	.+108    	; 0x16a <SetPinDirection+0xfe>
+		{
+			//DDRB
+			if (PinDirection == INPUT) // Input
+  fe:	8b 81       	ldd	r24, Y+3	; 0x03
+ 100:	88 23       	and	r24, r24
+ 102:	c1 f4       	brne	.+48     	; 0x134 <SetPinDirection+0xc8>
+			{
+				CLR_BIT(DDRB, PinNumber%NUM);
+ 104:	a8 e3       	ldi	r26, 0x38	; 56
+ 106:	b0 e0       	ldi	r27, 0x00	; 0
+ 108:	e8 e3       	ldi	r30, 0x38	; 56
+ 10a:	f0 e0       	ldi	r31, 0x00	; 0
+ 10c:	80 81       	ld	r24, Z
+ 10e:	48 2f       	mov	r20, r24
+ 110:	8a 81       	ldd	r24, Y+2	; 0x02
+ 112:	88 2f       	mov	r24, r24
+ 114:	90 e0       	ldi	r25, 0x00	; 0
+ 116:	9c 01       	movw	r18, r24
+ 118:	27 70       	andi	r18, 0x07	; 7
+ 11a:	30 70       	andi	r19, 0x00	; 0
+ 11c:	81 e0       	ldi	r24, 0x01	; 1
+ 11e:	90 e0       	ldi	r25, 0x00	; 0
+ 120:	02 2e       	mov	r0, r18
+ 122:	02 c0       	rjmp	.+4      	; 0x128 <SetPinDirection+0xbc>
+ 124:	88 0f       	add	r24, r24
+ 126:	99 1f       	adc	r25, r25
+ 128:	0a 94       	dec	r0
+ 12a:	e2 f7       	brpl	.-8      	; 0x124 <SetPinDirection+0xb8>
+ 12c:	80 95       	com	r24
+ 12e:	84 23       	and	r24, r20
+ 130:	8c 93       	st	X, r24
+ 132:	8b c0       	rjmp	.+278    	; 0x24a <SetPinDirection+0x1de>
+			}
+			else if (PinDirection == OUTPUT) // Output
+ 134:	8b 81       	ldd	r24, Y+3	; 0x03
+ 136:	81 30       	cpi	r24, 0x01	; 1
+ 138:	09 f0       	breq	.+2      	; 0x13c <SetPinDirection+0xd0>
+ 13a:	87 c0       	rjmp	.+270    	; 0x24a <SetPinDirection+0x1de>
+			{
+				SET_BIT(DDRB, PinNumber%NUM);
+ 13c:	a8 e3       	ldi	r26, 0x38	; 56
+ 13e:	b0 e0       	ldi	r27, 0x00	; 0
+ 140:	e8 e3       	ldi	r30, 0x38	; 56
+ 142:	f0 e0       	ldi	r31, 0x00	; 0
+ 144:	80 81       	ld	r24, Z
+ 146:	48 2f       	mov	r20, r24
+ 148:	8a 81       	ldd	r24, Y+2	; 0x02
+ 14a:	88 2f       	mov	r24, r24
+ 14c:	90 e0       	ldi	r25, 0x00	; 0
+ 14e:	9c 01       	movw	r18, r24
+ 150:	27 70       	andi	r18, 0x07	; 7
+ 152:	30 70       	andi	r19, 0x00	; 0
+ 154:	81 e0       	ldi	r24, 0x01	; 1
+ 156:	90 e0       	ldi	r25, 0x00	; 0
+ 158:	02 2e       	mov	r0, r18
+ 15a:	02 c0       	rjmp	.+4      	; 0x160 <SetPinDirection+0xf4>
+ 15c:	88 0f       	add	r24, r24
+ 15e:	99 1f       	adc	r25, r25
+ 160:	0a 94       	dec	r0
+ 162:	e2 f7       	brpl	.-8      	; 0x15c <SetPinDirection+0xf0>
+ 164:	84 2b       	or	r24, r20
+ 166:	8c 93       	st	X, r24
+ 168:	70 c0       	rjmp	.+224    	; 0x24a <SetPinDirection+0x1de>
+			}
+		}
+
+	// 2 for port C
+		else if (PortLetter == PortC_Letter)
+ 16a:	89 81       	ldd	r24, Y+1	; 0x01
+ 16c:	82 30       	cpi	r24, 0x02	; 2
+ 16e:	b1 f5       	brne	.+108    	; 0x1dc <SetPinDirection+0x170>
+		{
+			//DDRC
+			if (PinDirection == INPUT) // Input
+ 170:	8b 81       	ldd	r24, Y+3	; 0x03
+ 172:	88 23       	and	r24, r24
+ 174:	c1 f4       	brne	.+48     	; 0x1a6 <SetPinDirection+0x13a>
+			{
+				CLR_BIT(DDRC, PinNumber%NUM);
+ 176:	a5 e3       	ldi	r26, 0x35	; 53
+ 178:	b0 e0       	ldi	r27, 0x00	; 0
+ 17a:	e5 e3       	ldi	r30, 0x35	; 53
+ 17c:	f0 e0       	ldi	r31, 0x00	; 0
+ 17e:	80 81       	ld	r24, Z
+ 180:	48 2f       	mov	r20, r24
+ 182:	8a 81       	ldd	r24, Y+2	; 0x02
+ 184:	88 2f       	mov	r24, r24
+ 186:	90 e0       	ldi	r25, 0x00	; 0
+ 188:	9c 01       	movw	r18, r24
+ 18a:	27 70       	andi	r18, 0x07	; 7
+ 18c:	30 70       	andi	r19, 0x00	; 0
+ 18e:	81 e0       	ldi	r24, 0x01	; 1
+ 190:	90 e0       	ldi	r25, 0x00	; 0
+ 192:	02 2e       	mov	r0, r18
+ 194:	02 c0       	rjmp	.+4      	; 0x19a <SetPinDirection+0x12e>
+ 196:	88 0f       	add	r24, r24
+ 198:	99 1f       	adc	r25, r25
+ 19a:	0a 94       	dec	r0
+ 19c:	e2 f7       	brpl	.-8      	; 0x196 <SetPinDirection+0x12a>
+ 19e:	80 95       	com	r24
+ 1a0:	84 23       	and	r24, r20
+ 1a2:	8c 93       	st	X, r24
+ 1a4:	52 c0       	rjmp	.+164    	; 0x24a <SetPinDirection+0x1de>
+			}
+			else if (PinDirection == OUTPUT) // Output
+ 1a6:	8b 81       	ldd	r24, Y+3	; 0x03
+ 1a8:	81 30       	cpi	r24, 0x01	; 1
+ 1aa:	09 f0       	breq	.+2      	; 0x1ae <SetPinDirection+0x142>
+ 1ac:	4e c0       	rjmp	.+156    	; 0x24a <SetPinDirection+0x1de>
+			{
+				SET_BIT(DDRC, PinNumber%NUM);
+ 1ae:	a5 e3       	ldi	r26, 0x35	; 53
+ 1b0:	b0 e0       	ldi	r27, 0x00	; 0
+ 1b2:	e5 e3       	ldi	r30, 0x35	; 53
+ 1b4:	f0 e0       	ldi	r31, 0x00	; 0
+ 1b6:	80 81       	ld	r24, Z
+ 1b8:	48 2f       	mov	r20, r24
+ 1ba:	8a 81       	ldd	r24, Y+2	; 0x02
+ 1bc:	88 2f       	mov	r24, r24
+ 1be:	90 e0       	ldi	r25, 0x00	; 0
+ 1c0:	9c 01       	movw	r18, r24
+ 1c2:	27 70       	andi	r18, 0x07	; 7
+ 1c4:	30 70       	andi	r19, 0x00	; 0
+ 1c6:	81 e0       	ldi	r24, 0x01	; 1
+ 1c8:	90 e0       	ldi	r25, 0x00	; 0
+ 1ca:	02 2e       	mov	r0, r18
+ 1cc:	02 c0       	rjmp	.+4      	; 0x1d2 <SetPinDirection+0x166>
+ 1ce:	88 0f       	add	r24, r24
+ 1d0:	99 1f       	adc	r25, r25
+ 1d2:	0a 94       	dec	r0
+ 1d4:	e2 f7       	brpl	.-8      	; 0x1ce <SetPinDirection+0x162>
+ 1d6:	84 2b       	or	r24, r20
+ 1d8:	8c 93       	st	X, r24
+ 1da:	37 c0       	rjmp	.+110    	; 0x24a <SetPinDirection+0x1de>
+			}
+		}
+
+	// 3 for port D
+		else if (PortLetter == PortD_Letter)
+ 1dc:	89 81       	ldd	r24, Y+1	; 0x01
+ 1de:	83 30       	cpi	r24, 0x03	; 3
+ 1e0:	a1 f5       	brne	.+104    	; 0x24a <SetPinDirection+0x1de>
+		{
+			//DDRA
+			if (PinDirection == INPUT) // Input
+ 1e2:	8b 81       	ldd	r24, Y+3	; 0x03
+ 1e4:	88 23       	and	r24, r24
+ 1e6:	c1 f4       	brne	.+48     	; 0x218 <SetPinDirection+0x1ac>
+			{
+				CLR_BIT(DDRD, PinNumber%NUM);
+ 1e8:	a2 e3       	ldi	r26, 0x32	; 50
+ 1ea:	b0 e0       	ldi	r27, 0x00	; 0
+ 1ec:	e2 e3       	ldi	r30, 0x32	; 50
+ 1ee:	f0 e0       	ldi	r31, 0x00	; 0
+ 1f0:	80 81       	ld	r24, Z
+ 1f2:	48 2f       	mov	r20, r24
+ 1f4:	8a 81       	ldd	r24, Y+2	; 0x02
+ 1f6:	88 2f       	mov	r24, r24
+ 1f8:	90 e0       	ldi	r25, 0x00	; 0
+ 1fa:	9c 01       	movw	r18, r24
+ 1fc:	27 70       	andi	r18, 0x07	; 7
+ 1fe:	30 70       	andi	r19, 0x00	; 0
+ 200:	81 e0       	ldi	r24, 0x01	; 1
+ 202:	90 e0       	ldi	r25, 0x00	; 0
+ 204:	02 2e       	mov	r0, r18
+ 206:	02 c0       	rjmp	.+4      	; 0x20c <SetPinDirection+0x1a0>
+ 208:	88 0f       	add	r24, r24
+ 20a:	99 1f       	adc	r25, r25
+ 20c:	0a 94       	dec	r0
+ 20e:	e2 f7       	brpl	.-8      	; 0x208 <SetPinDirection+0x19c>
+ 210:	80 95       	com	r24
+ 212:	84 23       	and	r24, r20
+ 214:	8c 93       	st	X, r24
+ 216:	19 c0       	rjmp	.+50     	; 0x24a <SetPinDirection+0x1de>
+			}
+			else if (PinDirection == OUTPUT) // Output
+ 218:	8b 81       	ldd	r24, Y+3	; 0x03
+ 21a:	81 30       	cpi	r24, 0x01	; 1
+ 21c:	b1 f4       	brne	.+44     	; 0x24a <SetPinDirection+0x1de>
+			{
+				SET_BIT(DDRD, PinNumber%NUM);
+ 21e:	a2 e3       	ldi	r26, 0x32	; 50
+ 220:	b0 e0       	ldi	r27, 0x00	; 0
+ 222:	e2 e3       	ldi	r30, 0x32	; 50
+ 224:	f0 e0       	ldi	r31, 0x00	; 0
+ 226:	80 81       	ld	r24, Z
+ 228:	48 2f       	mov	r20, r24
+ 22a:	8a 81       	ldd	r24, Y+2	; 0x02
+ 22c:	88 2f       	mov	r24, r24
+ 22e:	90 e0       	ldi	r25, 0x00	; 0
+ 230:	9c 01       	movw	r18, r24
+ 232:	27 70       	andi	r18, 0x07	; 7
+ 234:	30 70       	andi	r19, 0x00	; 0
+ 236:	81 e0       	ldi	r24, 0x01	; 1
+ 238:	90 e0       	ldi	r25, 0x00	; 0
+ 23a:	02 2e       	mov	r0, r18
+ 23c:	02 c0       	rjmp	.+4      	; 0x242 <SetPinDirection+0x1d6>
+ 23e:	88 0f       	add	r24, r24
+ 240:	99 1f       	adc	r25, r25
+ 242:	0a 94       	dec	r0
+ 244:	e2 f7       	brpl	.-8      	; 0x23e <SetPinDirection+0x1d2>
+ 246:	84 2b       	or	r24, r20
+ 248:	8c 93       	st	X, r24
+			}
+		}
+
+}
+ 24a:	0f 90       	pop	r0
+ 24c:	0f 90       	pop	r0
+ 24e:	0f 90       	pop	r0
+ 250:	cf 91       	pop	r28
+ 252:	df 91       	pop	r29
+ 254:	08 95       	ret
+
+00000256 <SetPinValue>:
+
+// Function (2): to set the output of the output pins (0-31)
+void SetPinValue(u8 PinNumber, u8 PinValue)
+{
+ 256:	df 93       	push	r29
+ 258:	cf 93       	push	r28
+ 25a:	00 d0       	rcall	.+0      	; 0x25c <SetPinValue+0x6>
+ 25c:	0f 92       	push	r0
+ 25e:	cd b7       	in	r28, 0x3d	; 61
+ 260:	de b7       	in	r29, 0x3e	; 62
+ 262:	8a 83       	std	Y+2, r24	; 0x02
+ 264:	6b 83       	std	Y+3, r22	; 0x03
+	u8 PortLetter;
+	PortLetter = PinNumber/NUM; // to get the Port letter (0 for A, 1 for B, 2 for C, 3 for D)
+ 266:	8a 81       	ldd	r24, Y+2	; 0x02
+ 268:	86 95       	lsr	r24
+ 26a:	86 95       	lsr	r24
+ 26c:	86 95       	lsr	r24
+ 26e:	89 83       	std	Y+1, r24	; 0x01
+	// PinNumber%NUM gives the number of the pin in the port from 0 to 7
+
+	if (PortLetter == PortA_Letter) // 0 for port A
+ 270:	89 81       	ldd	r24, Y+1	; 0x01
+ 272:	88 23       	and	r24, r24
+ 274:	b1 f5       	brne	.+108    	; 0x2e2 <SetPinValue+0x8c>
+	{
+		//PORTA
+		if (PinValue == LOW) // Low
+ 276:	8b 81       	ldd	r24, Y+3	; 0x03
+ 278:	88 23       	and	r24, r24
+ 27a:	c1 f4       	brne	.+48     	; 0x2ac <SetPinValue+0x56>
+		{
+			CLR_BIT(PORTA, PinNumber%NUM);
+ 27c:	ad e3       	ldi	r26, 0x3D	; 61
+ 27e:	b0 e0       	ldi	r27, 0x00	; 0
+ 280:	ed e3       	ldi	r30, 0x3D	; 61
+ 282:	f0 e0       	ldi	r31, 0x00	; 0
+ 284:	80 81       	ld	r24, Z
+ 286:	48 2f       	mov	r20, r24
+ 288:	8a 81       	ldd	r24, Y+2	; 0x02
+ 28a:	88 2f       	mov	r24, r24
+ 28c:	90 e0       	ldi	r25, 0x00	; 0
+ 28e:	9c 01       	movw	r18, r24
+ 290:	27 70       	andi	r18, 0x07	; 7
+ 292:	30 70       	andi	r19, 0x00	; 0
+ 294:	81 e0       	ldi	r24, 0x01	; 1
+ 296:	90 e0       	ldi	r25, 0x00	; 0
+ 298:	02 2e       	mov	r0, r18
+ 29a:	02 c0       	rjmp	.+4      	; 0x2a0 <SetPinValue+0x4a>
+ 29c:	88 0f       	add	r24, r24
+ 29e:	99 1f       	adc	r25, r25
+ 2a0:	0a 94       	dec	r0
+ 2a2:	e2 f7       	brpl	.-8      	; 0x29c <SetPinValue+0x46>
+ 2a4:	80 95       	com	r24
+ 2a6:	84 23       	and	r24, r20
+ 2a8:	8c 93       	st	X, r24
+ 2aa:	c4 c0       	rjmp	.+392    	; 0x434 <SetPinValue+0x1de>
+		}
+		else if (PinValue == HIGH) // High
+ 2ac:	8b 81       	ldd	r24, Y+3	; 0x03
+ 2ae:	81 30       	cpi	r24, 0x01	; 1
+ 2b0:	09 f0       	breq	.+2      	; 0x2b4 <SetPinValue+0x5e>
+ 2b2:	c0 c0       	rjmp	.+384    	; 0x434 <SetPinValue+0x1de>
+		{
+			SET_BIT(PORTA, PinNumber%NUM);
+ 2b4:	ad e3       	ldi	r26, 0x3D	; 61
+ 2b6:	b0 e0       	ldi	r27, 0x00	; 0
+ 2b8:	ed e3       	ldi	r30, 0x3D	; 61
+ 2ba:	f0 e0       	ldi	r31, 0x00	; 0
+ 2bc:	80 81       	ld	r24, Z
+ 2be:	48 2f       	mov	r20, r24
+ 2c0:	8a 81       	ldd	r24, Y+2	; 0x02
+ 2c2:	88 2f       	mov	r24, r24
+ 2c4:	90 e0       	ldi	r25, 0x00	; 0
+ 2c6:	9c 01       	movw	r18, r24
+ 2c8:	27 70       	andi	r18, 0x07	; 7
+ 2ca:	30 70       	andi	r19, 0x00	; 0
+ 2cc:	81 e0       	ldi	r24, 0x01	; 1
+ 2ce:	90 e0       	ldi	r25, 0x00	; 0
+ 2d0:	02 2e       	mov	r0, r18
+ 2d2:	02 c0       	rjmp	.+4      	; 0x2d8 <SetPinValue+0x82>
+ 2d4:	88 0f       	add	r24, r24
+ 2d6:	99 1f       	adc	r25, r25
+ 2d8:	0a 94       	dec	r0
+ 2da:	e2 f7       	brpl	.-8      	; 0x2d4 <SetPinValue+0x7e>
+ 2dc:	84 2b       	or	r24, r20
+ 2de:	8c 93       	st	X, r24
+ 2e0:	a9 c0       	rjmp	.+338    	; 0x434 <SetPinValue+0x1de>
+		}
+	}
+
+	else if (PortLetter == PortB_Letter) // 1 for port B
+ 2e2:	89 81       	ldd	r24, Y+1	; 0x01
+ 2e4:	81 30       	cpi	r24, 0x01	; 1
+ 2e6:	b1 f5       	brne	.+108    	; 0x354 <SetPinValue+0xfe>
+	{
+		//PORTB
+		if (PinValue == LOW) // Low
+ 2e8:	8b 81       	ldd	r24, Y+3	; 0x03
+ 2ea:	88 23       	and	r24, r24
+ 2ec:	c1 f4       	brne	.+48     	; 0x31e <SetPinValue+0xc8>
+		{
+			CLR_BIT(PORTB, PinNumber%NUM);
+ 2ee:	a7 e3       	ldi	r26, 0x37	; 55
+ 2f0:	b0 e0       	ldi	r27, 0x00	; 0
+ 2f2:	e7 e3       	ldi	r30, 0x37	; 55
+ 2f4:	f0 e0       	ldi	r31, 0x00	; 0
+ 2f6:	80 81       	ld	r24, Z
+ 2f8:	48 2f       	mov	r20, r24
+ 2fa:	8a 81       	ldd	r24, Y+2	; 0x02
+ 2fc:	88 2f       	mov	r24, r24
+ 2fe:	90 e0       	ldi	r25, 0x00	; 0
+ 300:	9c 01       	movw	r18, r24
+ 302:	27 70       	andi	r18, 0x07	; 7
+ 304:	30 70       	andi	r19, 0x00	; 0
+ 306:	81 e0       	ldi	r24, 0x01	; 1
+ 308:	90 e0       	ldi	r25, 0x00	; 0
+ 30a:	02 2e       	mov	r0, r18
+ 30c:	02 c0       	rjmp	.+4      	; 0x312 <SetPinValue+0xbc>
+ 30e:	88 0f       	add	r24, r24
+ 310:	99 1f       	adc	r25, r25
+ 312:	0a 94       	dec	r0
+ 314:	e2 f7       	brpl	.-8      	; 0x30e <SetPinValue+0xb8>
+ 316:	80 95       	com	r24
+ 318:	84 23       	and	r24, r20
+ 31a:	8c 93       	st	X, r24
+ 31c:	8b c0       	rjmp	.+278    	; 0x434 <SetPinValue+0x1de>
+		}
+		else if (PinValue == HIGH) // High
+ 31e:	8b 81       	ldd	r24, Y+3	; 0x03
+ 320:	81 30       	cpi	r24, 0x01	; 1
+ 322:	09 f0       	breq	.+2      	; 0x326 <SetPinValue+0xd0>
+ 324:	87 c0       	rjmp	.+270    	; 0x434 <SetPinValue+0x1de>
+		{
+			SET_BIT(PORTB, PinNumber%NUM);
+ 326:	a7 e3       	ldi	r26, 0x37	; 55
+ 328:	b0 e0       	ldi	r27, 0x00	; 0
+ 32a:	e7 e3       	ldi	r30, 0x37	; 55
+ 32c:	f0 e0       	ldi	r31, 0x00	; 0
+ 32e:	80 81       	ld	r24, Z
+ 330:	48 2f       	mov	r20, r24
+ 332:	8a 81       	ldd	r24, Y+2	; 0x02
+ 334:	88 2f       	mov	r24, r24
+ 336:	90 e0       	ldi	r25, 0x00	; 0
+ 338:	9c 01       	movw	r18, r24
+ 33a:	27 70       	andi	r18, 0x07	; 7
+ 33c:	30 70       	andi	r19, 0x00	; 0
+ 33e:	81 e0       	ldi	r24, 0x01	; 1
+ 340:	90 e0       	ldi	r25, 0x00	; 0
+ 342:	02 2e       	mov	r0, r18
+ 344:	02 c0       	rjmp	.+4      	; 0x34a <SetPinValue+0xf4>
+ 346:	88 0f       	add	r24, r24
+ 348:	99 1f       	adc	r25, r25
+ 34a:	0a 94       	dec	r0
+ 34c:	e2 f7       	brpl	.-8      	; 0x346 <SetPinValue+0xf0>
+ 34e:	84 2b       	or	r24, r20
+ 350:	8c 93       	st	X, r24
+ 352:	70 c0       	rjmp	.+224    	; 0x434 <SetPinValue+0x1de>
+		}
+	}
+
+
+	else if (PortLetter == PortC_Letter) // 2 for port C
+ 354:	89 81       	ldd	r24, Y+1	; 0x01
+ 356:	82 30       	cpi	r24, 0x02	; 2
+ 358:	b1 f5       	brne	.+108    	; 0x3c6 <SetPinValue+0x170>
+	{
+		//PORTC
+		if (PinValue == LOW) // Low
+ 35a:	8b 81       	ldd	r24, Y+3	; 0x03
+ 35c:	88 23       	and	r24, r24
+ 35e:	c1 f4       	brne	.+48     	; 0x390 <SetPinValue+0x13a>
+		{
+			CLR_BIT(PORTC, PinNumber%NUM);
+ 360:	a4 e3       	ldi	r26, 0x34	; 52
+ 362:	b0 e0       	ldi	r27, 0x00	; 0
+ 364:	e4 e3       	ldi	r30, 0x34	; 52
+ 366:	f0 e0       	ldi	r31, 0x00	; 0
+ 368:	80 81       	ld	r24, Z
+ 36a:	48 2f       	mov	r20, r24
+ 36c:	8a 81       	ldd	r24, Y+2	; 0x02
+ 36e:	88 2f       	mov	r24, r24
+ 370:	90 e0       	ldi	r25, 0x00	; 0
+ 372:	9c 01       	movw	r18, r24
+ 374:	27 70       	andi	r18, 0x07	; 7
+ 376:	30 70       	andi	r19, 0x00	; 0
+ 378:	81 e0       	ldi	r24, 0x01	; 1
+ 37a:	90 e0       	ldi	r25, 0x00	; 0
+ 37c:	02 2e       	mov	r0, r18
+ 37e:	02 c0       	rjmp	.+4      	; 0x384 <SetPinValue+0x12e>
+ 380:	88 0f       	add	r24, r24
+ 382:	99 1f       	adc	r25, r25
+ 384:	0a 94       	dec	r0
+ 386:	e2 f7       	brpl	.-8      	; 0x380 <SetPinValue+0x12a>
+ 388:	80 95       	com	r24
+ 38a:	84 23       	and	r24, r20
+ 38c:	8c 93       	st	X, r24
+ 38e:	52 c0       	rjmp	.+164    	; 0x434 <SetPinValue+0x1de>
+		}
+		else if (PinValue == HIGH) // High
+ 390:	8b 81       	ldd	r24, Y+3	; 0x03
+ 392:	81 30       	cpi	r24, 0x01	; 1
+ 394:	09 f0       	breq	.+2      	; 0x398 <SetPinValue+0x142>
+ 396:	4e c0       	rjmp	.+156    	; 0x434 <SetPinValue+0x1de>
+		{
+			SET_BIT(PORTC, PinNumber%NUM);
+ 398:	a4 e3       	ldi	r26, 0x34	; 52
+ 39a:	b0 e0       	ldi	r27, 0x00	; 0
+ 39c:	e4 e3       	ldi	r30, 0x34	; 52
+ 39e:	f0 e0       	ldi	r31, 0x00	; 0
+ 3a0:	80 81       	ld	r24, Z
+ 3a2:	48 2f       	mov	r20, r24
+ 3a4:	8a 81       	ldd	r24, Y+2	; 0x02
+ 3a6:	88 2f       	mov	r24, r24
+ 3a8:	90 e0       	ldi	r25, 0x00	; 0
+ 3aa:	9c 01       	movw	r18, r24
+ 3ac:	27 70       	andi	r18, 0x07	; 7
+ 3ae:	30 70       	andi	r19, 0x00	; 0
+ 3b0:	81 e0       	ldi	r24, 0x01	; 1
+ 3b2:	90 e0       	ldi	r25, 0x00	; 0
+ 3b4:	02 2e       	mov	r0, r18
+ 3b6:	02 c0       	rjmp	.+4      	; 0x3bc <SetPinValue+0x166>
+ 3b8:	88 0f       	add	r24, r24
+ 3ba:	99 1f       	adc	r25, r25
+ 3bc:	0a 94       	dec	r0
+ 3be:	e2 f7       	brpl	.-8      	; 0x3b8 <SetPinValue+0x162>
+ 3c0:	84 2b       	or	r24, r20
+ 3c2:	8c 93       	st	X, r24
+ 3c4:	37 c0       	rjmp	.+110    	; 0x434 <SetPinValue+0x1de>
+		}
+	}
+
+	else if (PortLetter == PortD_Letter) // 3 for port D
+ 3c6:	89 81       	ldd	r24, Y+1	; 0x01
+ 3c8:	83 30       	cpi	r24, 0x03	; 3
+ 3ca:	a1 f5       	brne	.+104    	; 0x434 <SetPinValue+0x1de>
+	{
+		//PORTD
+		if (PinValue == LOW) // Low
+ 3cc:	8b 81       	ldd	r24, Y+3	; 0x03
+ 3ce:	88 23       	and	r24, r24
+ 3d0:	c1 f4       	brne	.+48     	; 0x402 <SetPinValue+0x1ac>
+		{
+			CLR_BIT(PORTD, PinNumber%NUM);
+ 3d2:	a1 e3       	ldi	r26, 0x31	; 49
+ 3d4:	b0 e0       	ldi	r27, 0x00	; 0
+ 3d6:	e1 e3       	ldi	r30, 0x31	; 49
+ 3d8:	f0 e0       	ldi	r31, 0x00	; 0
+ 3da:	80 81       	ld	r24, Z
+ 3dc:	48 2f       	mov	r20, r24
+ 3de:	8a 81       	ldd	r24, Y+2	; 0x02
+ 3e0:	88 2f       	mov	r24, r24
+ 3e2:	90 e0       	ldi	r25, 0x00	; 0
+ 3e4:	9c 01       	movw	r18, r24
+ 3e6:	27 70       	andi	r18, 0x07	; 7
+ 3e8:	30 70       	andi	r19, 0x00	; 0
+ 3ea:	81 e0       	ldi	r24, 0x01	; 1
+ 3ec:	90 e0       	ldi	r25, 0x00	; 0
+ 3ee:	02 2e       	mov	r0, r18
+ 3f0:	02 c0       	rjmp	.+4      	; 0x3f6 <SetPinValue+0x1a0>
+ 3f2:	88 0f       	add	r24, r24
+ 3f4:	99 1f       	adc	r25, r25
+ 3f6:	0a 94       	dec	r0
+ 3f8:	e2 f7       	brpl	.-8      	; 0x3f2 <SetPinValue+0x19c>
+ 3fa:	80 95       	com	r24
+ 3fc:	84 23       	and	r24, r20
+ 3fe:	8c 93       	st	X, r24
+ 400:	19 c0       	rjmp	.+50     	; 0x434 <SetPinValue+0x1de>
+		}
+		else if (PinValue == HIGH) // High
+ 402:	8b 81       	ldd	r24, Y+3	; 0x03
+ 404:	81 30       	cpi	r24, 0x01	; 1
+ 406:	b1 f4       	brne	.+44     	; 0x434 <SetPinValue+0x1de>
+		{
+			SET_BIT(PORTD, PinNumber%NUM);
+ 408:	a1 e3       	ldi	r26, 0x31	; 49
+ 40a:	b0 e0       	ldi	r27, 0x00	; 0
+ 40c:	e1 e3       	ldi	r30, 0x31	; 49
+ 40e:	f0 e0       	ldi	r31, 0x00	; 0
+ 410:	80 81       	ld	r24, Z
+ 412:	48 2f       	mov	r20, r24
+ 414:	8a 81       	ldd	r24, Y+2	; 0x02
+ 416:	88 2f       	mov	r24, r24
+ 418:	90 e0       	ldi	r25, 0x00	; 0
+ 41a:	9c 01       	movw	r18, r24
+ 41c:	27 70       	andi	r18, 0x07	; 7
+ 41e:	30 70       	andi	r19, 0x00	; 0
+ 420:	81 e0       	ldi	r24, 0x01	; 1
+ 422:	90 e0       	ldi	r25, 0x00	; 0
+ 424:	02 2e       	mov	r0, r18
+ 426:	02 c0       	rjmp	.+4      	; 0x42c <SetPinValue+0x1d6>
+ 428:	88 0f       	add	r24, r24
+ 42a:	99 1f       	adc	r25, r25
+ 42c:	0a 94       	dec	r0
+ 42e:	e2 f7       	brpl	.-8      	; 0x428 <SetPinValue+0x1d2>
+ 430:	84 2b       	or	r24, r20
+ 432:	8c 93       	st	X, r24
+		}
+	}
+}
+ 434:	0f 90       	pop	r0
+ 436:	0f 90       	pop	r0
+ 438:	0f 90       	pop	r0
+ 43a:	cf 91       	pop	r28
+ 43c:	df 91       	pop	r29
+ 43e:	08 95       	ret
+
+00000440 <GetPinValue>:
+
+
+
+// Fucntion (3): to get the value of the input pin
+u8 GetPinValue(u8 PinNumber) // return the value of pin 0 - 31
+{
+ 440:	df 93       	push	r29
+ 442:	cf 93       	push	r28
+ 444:	00 d0       	rcall	.+0      	; 0x446 <GetPinValue+0x6>
+ 446:	00 d0       	rcall	.+0      	; 0x448 <GetPinValue+0x8>
+ 448:	cd b7       	in	r28, 0x3d	; 61
+ 44a:	de b7       	in	r29, 0x3e	; 62
+ 44c:	8a 83       	std	Y+2, r24	; 0x02
+	u8 PortLetter;
+	PortLetter = PinNumber / NUM; // to get the Port letter (0 for A, 1 for B, 2 for C, 3 for D)
+ 44e:	8a 81       	ldd	r24, Y+2	; 0x02
+ 450:	86 95       	lsr	r24
+ 452:	86 95       	lsr	r24
+ 454:	86 95       	lsr	r24
+ 456:	89 83       	std	Y+1, r24	; 0x01
+	// PinNumber%NUM gives the number of the pin in the port from 0 to 7
+
+	if (PortLetter == PortA_Letter) // 0 for port A
+ 458:	89 81       	ldd	r24, Y+1	; 0x01
+ 45a:	88 23       	and	r24, r24
+ 45c:	a9 f4       	brne	.+42     	; 0x488 <GetPinValue+0x48>
+	{
+		//PINA
+		return GET_BIT(PINA, PinNumber%NUM);
+ 45e:	e9 e3       	ldi	r30, 0x39	; 57
+ 460:	f0 e0       	ldi	r31, 0x00	; 0
+ 462:	80 81       	ld	r24, Z
+ 464:	28 2f       	mov	r18, r24
+ 466:	30 e0       	ldi	r19, 0x00	; 0
+ 468:	8a 81       	ldd	r24, Y+2	; 0x02
+ 46a:	88 2f       	mov	r24, r24
+ 46c:	90 e0       	ldi	r25, 0x00	; 0
+ 46e:	87 70       	andi	r24, 0x07	; 7
+ 470:	90 70       	andi	r25, 0x00	; 0
+ 472:	a9 01       	movw	r20, r18
+ 474:	02 c0       	rjmp	.+4      	; 0x47a <GetPinValue+0x3a>
+ 476:	55 95       	asr	r21
+ 478:	47 95       	ror	r20
+ 47a:	8a 95       	dec	r24
+ 47c:	e2 f7       	brpl	.-8      	; 0x476 <GetPinValue+0x36>
+ 47e:	ca 01       	movw	r24, r20
+ 480:	58 2f       	mov	r21, r24
+ 482:	51 70       	andi	r21, 0x01	; 1
+ 484:	5b 83       	std	Y+3, r21	; 0x03
+ 486:	49 c0       	rjmp	.+146    	; 0x51a <GetPinValue+0xda>
+	}
+	else if (PortLetter == PortB_Letter) // 1 for port B
+ 488:	89 81       	ldd	r24, Y+1	; 0x01
+ 48a:	81 30       	cpi	r24, 0x01	; 1
+ 48c:	a9 f4       	brne	.+42     	; 0x4b8 <GetPinValue+0x78>
+	{
+		//PINB
+		return GET_BIT(PINB, PinNumber%NUM);
+ 48e:	e6 e3       	ldi	r30, 0x36	; 54
+ 490:	f0 e0       	ldi	r31, 0x00	; 0
+ 492:	80 81       	ld	r24, Z
+ 494:	28 2f       	mov	r18, r24
+ 496:	30 e0       	ldi	r19, 0x00	; 0
+ 498:	8a 81       	ldd	r24, Y+2	; 0x02
+ 49a:	88 2f       	mov	r24, r24
+ 49c:	90 e0       	ldi	r25, 0x00	; 0
+ 49e:	87 70       	andi	r24, 0x07	; 7
+ 4a0:	90 70       	andi	r25, 0x00	; 0
+ 4a2:	a9 01       	movw	r20, r18
+ 4a4:	02 c0       	rjmp	.+4      	; 0x4aa <GetPinValue+0x6a>
+ 4a6:	55 95       	asr	r21
+ 4a8:	47 95       	ror	r20
+ 4aa:	8a 95       	dec	r24
+ 4ac:	e2 f7       	brpl	.-8      	; 0x4a6 <GetPinValue+0x66>
+ 4ae:	ca 01       	movw	r24, r20
+ 4b0:	58 2f       	mov	r21, r24
+ 4b2:	51 70       	andi	r21, 0x01	; 1
+ 4b4:	5b 83       	std	Y+3, r21	; 0x03
+ 4b6:	31 c0       	rjmp	.+98     	; 0x51a <GetPinValue+0xda>
+	}
+
+	else if (PortLetter == PortC_Letter) // 2 for port C
+ 4b8:	89 81       	ldd	r24, Y+1	; 0x01
+ 4ba:	82 30       	cpi	r24, 0x02	; 2
+ 4bc:	a9 f4       	brne	.+42     	; 0x4e8 <GetPinValue+0xa8>
+	{
+		//PINC
+		return GET_BIT(PINC, PinNumber%NUM);
+ 4be:	e3 e3       	ldi	r30, 0x33	; 51
+ 4c0:	f0 e0       	ldi	r31, 0x00	; 0
+ 4c2:	80 81       	ld	r24, Z
+ 4c4:	28 2f       	mov	r18, r24
+ 4c6:	30 e0       	ldi	r19, 0x00	; 0
+ 4c8:	8a 81       	ldd	r24, Y+2	; 0x02
+ 4ca:	88 2f       	mov	r24, r24
+ 4cc:	90 e0       	ldi	r25, 0x00	; 0
+ 4ce:	87 70       	andi	r24, 0x07	; 7
+ 4d0:	90 70       	andi	r25, 0x00	; 0
+ 4d2:	a9 01       	movw	r20, r18
+ 4d4:	02 c0       	rjmp	.+4      	; 0x4da <GetPinValue+0x9a>
+ 4d6:	55 95       	asr	r21
+ 4d8:	47 95       	ror	r20
+ 4da:	8a 95       	dec	r24
+ 4dc:	e2 f7       	brpl	.-8      	; 0x4d6 <GetPinValue+0x96>
+ 4de:	ca 01       	movw	r24, r20
+ 4e0:	58 2f       	mov	r21, r24
+ 4e2:	51 70       	andi	r21, 0x01	; 1
+ 4e4:	5b 83       	std	Y+3, r21	; 0x03
+ 4e6:	19 c0       	rjmp	.+50     	; 0x51a <GetPinValue+0xda>
+	}
+
+	else if (PortLetter == PortD_Letter) // 3 for port D
+ 4e8:	89 81       	ldd	r24, Y+1	; 0x01
+ 4ea:	83 30       	cpi	r24, 0x03	; 3
+ 4ec:	a9 f4       	brne	.+42     	; 0x518 <GetPinValue+0xd8>
+	{
+		//PIND
+		return GET_BIT(PIND, PinNumber%NUM);
+ 4ee:	e0 e3       	ldi	r30, 0x30	; 48
+ 4f0:	f0 e0       	ldi	r31, 0x00	; 0
+ 4f2:	80 81       	ld	r24, Z
+ 4f4:	28 2f       	mov	r18, r24
+ 4f6:	30 e0       	ldi	r19, 0x00	; 0
+ 4f8:	8a 81       	ldd	r24, Y+2	; 0x02
+ 4fa:	88 2f       	mov	r24, r24
+ 4fc:	90 e0       	ldi	r25, 0x00	; 0
+ 4fe:	87 70       	andi	r24, 0x07	; 7
+ 500:	90 70       	andi	r25, 0x00	; 0
+ 502:	a9 01       	movw	r20, r18
+ 504:	02 c0       	rjmp	.+4      	; 0x50a <GetPinValue+0xca>
+ 506:	55 95       	asr	r21
+ 508:	47 95       	ror	r20
+ 50a:	8a 95       	dec	r24
+ 50c:	e2 f7       	brpl	.-8      	; 0x506 <GetPinValue+0xc6>
+ 50e:	ca 01       	movw	r24, r20
+ 510:	58 2f       	mov	r21, r24
+ 512:	51 70       	andi	r21, 0x01	; 1
+ 514:	5b 83       	std	Y+3, r21	; 0x03
+ 516:	01 c0       	rjmp	.+2      	; 0x51a <GetPinValue+0xda>
+ 518:	02 c0       	rjmp	.+4      	; 0x51e <GetPinValue+0xde>
+	}
+}
+ 51a:	8b 81       	ldd	r24, Y+3	; 0x03
+ 51c:	8c 83       	std	Y+4, r24	; 0x04
+ 51e:	8c 81       	ldd	r24, Y+4	; 0x04
+ 520:	0f 90       	pop	r0
+ 522:	0f 90       	pop	r0
+ 524:	0f 90       	pop	r0
+ 526:	0f 90       	pop	r0
+ 528:	cf 91       	pop	r28
+ 52a:	df 91       	pop	r29
+ 52c:	08 95       	ret
+
+0000052e <main>:
+ *      Author: Ahmed A. Eltahan
+ */
+
+
+void main(void)
+{
+ 52e:	df 93       	push	r29
+ 530:	cf 93       	push	r28
+ 532:	cd b7       	in	r28, 0x3d	; 61
+ 534:	de b7       	in	r29, 0x3e	; 62
+
+}
+ 536:	cf 91       	pop	r28
+ 538:	df 91       	pop	r29
+ 53a:	08 95       	ret
+
+0000053c <_exit>:
+ 53c:	f8 94       	cli
+
+0000053e <__stop_program>:
+ 53e:	ff cf       	rjmp	.-2      	; 0x53e <__stop_program>
