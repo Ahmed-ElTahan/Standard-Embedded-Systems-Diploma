@@ -1,0 +1,3098 @@
+
+32_Interruputs_Fundamentals_with_ADC.elf:     file format elf32-avr
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         0000145c  00000000  00000000  00000054  2**1
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  1 .stab         00000e04  00000000  00000000  000014b0  2**2
+                  CONTENTS, READONLY, DEBUGGING
+  2 .stabstr      00000942  00000000  00000000  000022b4  2**0
+                  CONTENTS, READONLY, DEBUGGING
+
+Disassembly of section .text:
+
+00000000 <__vectors>:
+       0:	0c 94 2a 00 	jmp	0x54	; 0x54 <__ctors_end>
+       4:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+       8:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+       c:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+      10:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+      14:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+      18:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+      1c:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+      20:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+      24:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+      28:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+      2c:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+      30:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+      34:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+      38:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+      3c:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+      40:	0c 94 01 0a 	jmp	0x1402	; 0x1402 <__vector_16>
+      44:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+      48:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+      4c:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+      50:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+
+00000054 <__ctors_end>:
+      54:	11 24       	eor	r1, r1
+      56:	1f be       	out	0x3f, r1	; 63
+      58:	cf e5       	ldi	r28, 0x5F	; 95
+      5a:	d8 e0       	ldi	r29, 0x08	; 8
+      5c:	de bf       	out	0x3e, r29	; 62
+      5e:	cd bf       	out	0x3d, r28	; 61
+      60:	0e 94 d4 09 	call	0x13a8	; 0x13a8 <main>
+      64:	0c 94 2c 0a 	jmp	0x1458	; 0x1458 <_exit>
+
+00000068 <__bad_interrupt>:
+      68:	0c 94 00 00 	jmp	0	; 0x0 <__vectors>
+
+0000006c <ADC_Init>:
+#include"DDIO.h" // This header file includes the appropriate IO definitions for the device that has been specified by the -MCU= compiler command-line switch.
+#include"DADC.h" // This header file includes the appropriate definitions and functions used to initialize the ADC with a pre-specified configurations and to get the data back from the ADC after conversion
+
+
+void ADC_Init(ADC_CONFIG Config) // This Function used to configure settings of ADC: Reference voltage, Adjustment (Left, Right), Channel (Single: 0, 1...7, Differential), Prescaler (2, 4, 8...128). It takes a structure object of the data type defined as ADC_CONFIG which has 4 variables to be specified (Ref, Adjustment, Channel, Prescaler)
+{
+      6c:	df 93       	push	r29
+      6e:	cf 93       	push	r28
+      70:	cd b7       	in	r28, 0x3d	; 61
+      72:	de b7       	in	r29, 0x3e	; 62
+      74:	2c 97       	sbiw	r28, 0x0c	; 12
+      76:	0f b6       	in	r0, 0x3f	; 63
+      78:	f8 94       	cli
+      7a:	de bf       	out	0x3e, r29	; 62
+      7c:	0f be       	out	0x3f, r0	; 63
+      7e:	cd bf       	out	0x3d, r28	; 61
+      80:	69 83       	std	Y+1, r22	; 0x01
+      82:	7a 83       	std	Y+2, r23	; 0x02
+      84:	8b 83       	std	Y+3, r24	; 0x03
+      86:	9c 83       	std	Y+4, r25	; 0x04
+
+// Switching on REF (use AREF, AVCC, Internal 2.56V)
+	switch(Config.Ref)
+      88:	89 81       	ldd	r24, Y+1	; 0x01
+      8a:	28 2f       	mov	r18, r24
+      8c:	30 e0       	ldi	r19, 0x00	; 0
+      8e:	3c 87       	std	Y+12, r19	; 0x0c
+      90:	2b 87       	std	Y+11, r18	; 0x0b
+      92:	8b 85       	ldd	r24, Y+11	; 0x0b
+      94:	9c 85       	ldd	r25, Y+12	; 0x0c
+      96:	81 30       	cpi	r24, 0x01	; 1
+      98:	91 05       	cpc	r25, r1
+      9a:	c1 f0       	breq	.+48     	; 0xcc <ADC_Init+0x60>
+      9c:	2b 85       	ldd	r18, Y+11	; 0x0b
+      9e:	3c 85       	ldd	r19, Y+12	; 0x0c
+      a0:	22 30       	cpi	r18, 0x02	; 2
+      a2:	31 05       	cpc	r19, r1
+      a4:	11 f1       	breq	.+68     	; 0xea <ADC_Init+0x7e>
+      a6:	8b 85       	ldd	r24, Y+11	; 0x0b
+      a8:	9c 85       	ldd	r25, Y+12	; 0x0c
+      aa:	00 97       	sbiw	r24, 0x00	; 0
+      ac:	61 f5       	brne	.+88     	; 0x106 <ADC_Init+0x9a>
+	{
+	// REFS1 | REFS0 	0 | 0           // VREF = Input Voltage on AREF pin
+	case (REF_AREF):
+	CLR_BIT(ADMUX, REFS1);
+      ae:	a7 e2       	ldi	r26, 0x27	; 39
+      b0:	b0 e0       	ldi	r27, 0x00	; 0
+      b2:	e7 e2       	ldi	r30, 0x27	; 39
+      b4:	f0 e0       	ldi	r31, 0x00	; 0
+      b6:	80 81       	ld	r24, Z
+      b8:	8f 77       	andi	r24, 0x7F	; 127
+      ba:	8c 93       	st	X, r24
+	CLR_BIT(ADMUX, REFS0);
+      bc:	a7 e2       	ldi	r26, 0x27	; 39
+      be:	b0 e0       	ldi	r27, 0x00	; 0
+      c0:	e7 e2       	ldi	r30, 0x27	; 39
+      c2:	f0 e0       	ldi	r31, 0x00	; 0
+      c4:	80 81       	ld	r24, Z
+      c6:	8f 7b       	andi	r24, 0xBF	; 191
+      c8:	8c 93       	st	X, r24
+      ca:	1d c0       	rjmp	.+58     	; 0x106 <ADC_Init+0x9a>
+	break;
+
+	// REFS1 | REFS0 	0 | 1           // VREF = Input Voltage on AVCC pin + cap. on AFER
+	case (REF_AVCC):
+	CLR_BIT(ADMUX, REFS1);
+      cc:	a7 e2       	ldi	r26, 0x27	; 39
+      ce:	b0 e0       	ldi	r27, 0x00	; 0
+      d0:	e7 e2       	ldi	r30, 0x27	; 39
+      d2:	f0 e0       	ldi	r31, 0x00	; 0
+      d4:	80 81       	ld	r24, Z
+      d6:	8f 77       	andi	r24, 0x7F	; 127
+      d8:	8c 93       	st	X, r24
+	SET_BIT(ADMUX, REFS0);
+      da:	a7 e2       	ldi	r26, 0x27	; 39
+      dc:	b0 e0       	ldi	r27, 0x00	; 0
+      de:	e7 e2       	ldi	r30, 0x27	; 39
+      e0:	f0 e0       	ldi	r31, 0x00	; 0
+      e2:	80 81       	ld	r24, Z
+      e4:	80 64       	ori	r24, 0x40	; 64
+      e6:	8c 93       	st	X, r24
+      e8:	0e c0       	rjmp	.+28     	; 0x106 <ADC_Init+0x9a>
+	break;
+
+	// REFS1 | REFS0 	1 | 1           // VREF = Internal 2.56V + cap. on AFER
+	case (REF_INTERNAL):
+	SET_BIT(ADMUX, REFS1);
+      ea:	a7 e2       	ldi	r26, 0x27	; 39
+      ec:	b0 e0       	ldi	r27, 0x00	; 0
+      ee:	e7 e2       	ldi	r30, 0x27	; 39
+      f0:	f0 e0       	ldi	r31, 0x00	; 0
+      f2:	80 81       	ld	r24, Z
+      f4:	80 68       	ori	r24, 0x80	; 128
+      f6:	8c 93       	st	X, r24
+	SET_BIT(ADMUX, REFS0);
+      f8:	a7 e2       	ldi	r26, 0x27	; 39
+      fa:	b0 e0       	ldi	r27, 0x00	; 0
+      fc:	e7 e2       	ldi	r30, 0x27	; 39
+      fe:	f0 e0       	ldi	r31, 0x00	; 0
+     100:	80 81       	ld	r24, Z
+     102:	80 64       	ori	r24, 0x40	; 64
+     104:	8c 93       	st	X, r24
+	break;
+	}
+
+// Switching on ADJUSTMENT (Left or Right)
+	switch(Config.Adjustment)
+     106:	8a 81       	ldd	r24, Y+2	; 0x02
+     108:	28 2f       	mov	r18, r24
+     10a:	30 e0       	ldi	r19, 0x00	; 0
+     10c:	3a 87       	std	Y+10, r19	; 0x0a
+     10e:	29 87       	std	Y+9, r18	; 0x09
+     110:	89 85       	ldd	r24, Y+9	; 0x09
+     112:	9a 85       	ldd	r25, Y+10	; 0x0a
+     114:	00 97       	sbiw	r24, 0x00	; 0
+     116:	69 f0       	breq	.+26     	; 0x132 <ADC_Init+0xc6>
+     118:	29 85       	ldd	r18, Y+9	; 0x09
+     11a:	3a 85       	ldd	r19, Y+10	; 0x0a
+     11c:	21 30       	cpi	r18, 0x01	; 1
+     11e:	31 05       	cpc	r19, r1
+     120:	79 f4       	brne	.+30     	; 0x140 <ADC_Init+0xd4>
+	{
+	// Left: Arrange data in this option as: [ADCH(8)] [ADCL(2) 00 0000]
+	case (ADJUSTMENT_LEFT):
+	SET_BIT(ADMUX, ADLAR);
+     122:	a7 e2       	ldi	r26, 0x27	; 39
+     124:	b0 e0       	ldi	r27, 0x00	; 0
+     126:	e7 e2       	ldi	r30, 0x27	; 39
+     128:	f0 e0       	ldi	r31, 0x00	; 0
+     12a:	80 81       	ld	r24, Z
+     12c:	80 62       	ori	r24, 0x20	; 32
+     12e:	8c 93       	st	X, r24
+     130:	07 c0       	rjmp	.+14     	; 0x140 <ADC_Init+0xd4>
+	break;
+
+	// Right: Arrange data in this option as: [ADCH(2) 00 0000] [ADCL(8)]
+	case (ADJUSTMENT_RIGHT):
+	CLR_BIT(ADMUX, ADLAR);
+     132:	a7 e2       	ldi	r26, 0x27	; 39
+     134:	b0 e0       	ldi	r27, 0x00	; 0
+     136:	e7 e2       	ldi	r30, 0x27	; 39
+     138:	f0 e0       	ldi	r31, 0x00	; 0
+     13a:	80 81       	ld	r24, Z
+     13c:	8f 7d       	andi	r24, 0xDF	; 223
+     13e:	8c 93       	st	X, r24
+	break;
+	}
+
+// Switching on CHANNEL (Single Conversion: ADC0, ADC1...ADC7, Differential: )
+
+		switch(Config.Channel)
+     140:	8b 81       	ldd	r24, Y+3	; 0x03
+     142:	28 2f       	mov	r18, r24
+     144:	30 e0       	ldi	r19, 0x00	; 0
+     146:	38 87       	std	Y+8, r19	; 0x08
+     148:	2f 83       	std	Y+7, r18	; 0x07
+     14a:	8f 81       	ldd	r24, Y+7	; 0x07
+     14c:	98 85       	ldd	r25, Y+8	; 0x08
+     14e:	8e 30       	cpi	r24, 0x0E	; 14
+     150:	91 05       	cpc	r25, r1
+     152:	09 f4       	brne	.+2      	; 0x156 <ADC_Init+0xea>
+     154:	ad c2       	rjmp	.+1370   	; 0x6b0 <ADC_Init+0x644>
+     156:	2f 81       	ldd	r18, Y+7	; 0x07
+     158:	38 85       	ldd	r19, Y+8	; 0x08
+     15a:	2f 30       	cpi	r18, 0x0F	; 15
+     15c:	31 05       	cpc	r19, r1
+     15e:	0c f0       	brlt	.+2      	; 0x162 <ADC_Init+0xf6>
+     160:	54 c0       	rjmp	.+168    	; 0x20a <ADC_Init+0x19e>
+     162:	8f 81       	ldd	r24, Y+7	; 0x07
+     164:	98 85       	ldd	r25, Y+8	; 0x08
+     166:	86 30       	cpi	r24, 0x06	; 6
+     168:	91 05       	cpc	r25, r1
+     16a:	09 f4       	brne	.+2      	; 0x16e <ADC_Init+0x102>
+     16c:	81 c1       	rjmp	.+770    	; 0x470 <ADC_Init+0x404>
+     16e:	2f 81       	ldd	r18, Y+7	; 0x07
+     170:	38 85       	ldd	r19, Y+8	; 0x08
+     172:	27 30       	cpi	r18, 0x07	; 7
+     174:	31 05       	cpc	r19, r1
+     176:	24 f5       	brge	.+72     	; 0x1c0 <ADC_Init+0x154>
+     178:	8f 81       	ldd	r24, Y+7	; 0x07
+     17a:	98 85       	ldd	r25, Y+8	; 0x08
+     17c:	82 30       	cpi	r24, 0x02	; 2
+     17e:	91 05       	cpc	r25, r1
+     180:	09 f4       	brne	.+2      	; 0x184 <ADC_Init+0x118>
+     182:	e6 c0       	rjmp	.+460    	; 0x350 <ADC_Init+0x2e4>
+     184:	2f 81       	ldd	r18, Y+7	; 0x07
+     186:	38 85       	ldd	r19, Y+8	; 0x08
+     188:	23 30       	cpi	r18, 0x03	; 3
+     18a:	31 05       	cpc	r19, r1
+     18c:	64 f4       	brge	.+24     	; 0x1a6 <ADC_Init+0x13a>
+     18e:	8f 81       	ldd	r24, Y+7	; 0x07
+     190:	98 85       	ldd	r25, Y+8	; 0x08
+     192:	00 97       	sbiw	r24, 0x00	; 0
+     194:	09 f4       	brne	.+2      	; 0x198 <ADC_Init+0x12c>
+     196:	94 c0       	rjmp	.+296    	; 0x2c0 <ADC_Init+0x254>
+     198:	2f 81       	ldd	r18, Y+7	; 0x07
+     19a:	38 85       	ldd	r19, Y+8	; 0x08
+     19c:	21 30       	cpi	r18, 0x01	; 1
+     19e:	31 05       	cpc	r19, r1
+     1a0:	09 f4       	brne	.+2      	; 0x1a4 <ADC_Init+0x138>
+     1a2:	b2 c0       	rjmp	.+356    	; 0x308 <ADC_Init+0x29c>
+     1a4:	c4 c4       	rjmp	.+2440   	; 0xb2e <__stack+0x2cf>
+     1a6:	8f 81       	ldd	r24, Y+7	; 0x07
+     1a8:	98 85       	ldd	r25, Y+8	; 0x08
+     1aa:	84 30       	cpi	r24, 0x04	; 4
+     1ac:	91 05       	cpc	r25, r1
+     1ae:	09 f4       	brne	.+2      	; 0x1b2 <ADC_Init+0x146>
+     1b0:	17 c1       	rjmp	.+558    	; 0x3e0 <ADC_Init+0x374>
+     1b2:	2f 81       	ldd	r18, Y+7	; 0x07
+     1b4:	38 85       	ldd	r19, Y+8	; 0x08
+     1b6:	25 30       	cpi	r18, 0x05	; 5
+     1b8:	31 05       	cpc	r19, r1
+     1ba:	0c f0       	brlt	.+2      	; 0x1be <ADC_Init+0x152>
+     1bc:	35 c1       	rjmp	.+618    	; 0x428 <ADC_Init+0x3bc>
+     1be:	ec c0       	rjmp	.+472    	; 0x398 <ADC_Init+0x32c>
+     1c0:	8f 81       	ldd	r24, Y+7	; 0x07
+     1c2:	98 85       	ldd	r25, Y+8	; 0x08
+     1c4:	8a 30       	cpi	r24, 0x0A	; 10
+     1c6:	91 05       	cpc	r25, r1
+     1c8:	09 f4       	brne	.+2      	; 0x1cc <ADC_Init+0x160>
+     1ca:	e2 c1       	rjmp	.+964    	; 0x590 <ADC_Init+0x524>
+     1cc:	2f 81       	ldd	r18, Y+7	; 0x07
+     1ce:	38 85       	ldd	r19, Y+8	; 0x08
+     1d0:	2b 30       	cpi	r18, 0x0B	; 11
+     1d2:	31 05       	cpc	r19, r1
+     1d4:	6c f4       	brge	.+26     	; 0x1f0 <ADC_Init+0x184>
+     1d6:	8f 81       	ldd	r24, Y+7	; 0x07
+     1d8:	98 85       	ldd	r25, Y+8	; 0x08
+     1da:	88 30       	cpi	r24, 0x08	; 8
+     1dc:	91 05       	cpc	r25, r1
+     1de:	09 f4       	brne	.+2      	; 0x1e2 <ADC_Init+0x176>
+     1e0:	8f c1       	rjmp	.+798    	; 0x500 <ADC_Init+0x494>
+     1e2:	2f 81       	ldd	r18, Y+7	; 0x07
+     1e4:	38 85       	ldd	r19, Y+8	; 0x08
+     1e6:	29 30       	cpi	r18, 0x09	; 9
+     1e8:	31 05       	cpc	r19, r1
+     1ea:	0c f0       	brlt	.+2      	; 0x1ee <ADC_Init+0x182>
+     1ec:	ad c1       	rjmp	.+858    	; 0x548 <ADC_Init+0x4dc>
+     1ee:	64 c1       	rjmp	.+712    	; 0x4b8 <ADC_Init+0x44c>
+     1f0:	8f 81       	ldd	r24, Y+7	; 0x07
+     1f2:	98 85       	ldd	r25, Y+8	; 0x08
+     1f4:	8c 30       	cpi	r24, 0x0C	; 12
+     1f6:	91 05       	cpc	r25, r1
+     1f8:	09 f4       	brne	.+2      	; 0x1fc <ADC_Init+0x190>
+     1fa:	12 c2       	rjmp	.+1060   	; 0x620 <ADC_Init+0x5b4>
+     1fc:	2f 81       	ldd	r18, Y+7	; 0x07
+     1fe:	38 85       	ldd	r19, Y+8	; 0x08
+     200:	2d 30       	cpi	r18, 0x0D	; 13
+     202:	31 05       	cpc	r19, r1
+     204:	0c f0       	brlt	.+2      	; 0x208 <ADC_Init+0x19c>
+     206:	30 c2       	rjmp	.+1120   	; 0x668 <ADC_Init+0x5fc>
+     208:	e7 c1       	rjmp	.+974    	; 0x5d8 <ADC_Init+0x56c>
+     20a:	8f 81       	ldd	r24, Y+7	; 0x07
+     20c:	98 85       	ldd	r25, Y+8	; 0x08
+     20e:	86 31       	cpi	r24, 0x16	; 22
+     210:	91 05       	cpc	r25, r1
+     212:	09 f4       	brne	.+2      	; 0x216 <ADC_Init+0x1aa>
+     214:	6d c3       	rjmp	.+1754   	; 0x8f0 <__stack+0x91>
+     216:	2f 81       	ldd	r18, Y+7	; 0x07
+     218:	38 85       	ldd	r19, Y+8	; 0x08
+     21a:	27 31       	cpi	r18, 0x17	; 23
+     21c:	31 05       	cpc	r19, r1
+     21e:	2c f5       	brge	.+74     	; 0x26a <ADC_Init+0x1fe>
+     220:	8f 81       	ldd	r24, Y+7	; 0x07
+     222:	98 85       	ldd	r25, Y+8	; 0x08
+     224:	82 31       	cpi	r24, 0x12	; 18
+     226:	91 05       	cpc	r25, r1
+     228:	09 f4       	brne	.+2      	; 0x22c <ADC_Init+0x1c0>
+     22a:	d2 c2       	rjmp	.+1444   	; 0x7d0 <ADC_Init+0x764>
+     22c:	2f 81       	ldd	r18, Y+7	; 0x07
+     22e:	38 85       	ldd	r19, Y+8	; 0x08
+     230:	23 31       	cpi	r18, 0x13	; 19
+     232:	31 05       	cpc	r19, r1
+     234:	6c f4       	brge	.+26     	; 0x250 <ADC_Init+0x1e4>
+     236:	8f 81       	ldd	r24, Y+7	; 0x07
+     238:	98 85       	ldd	r25, Y+8	; 0x08
+     23a:	80 31       	cpi	r24, 0x10	; 16
+     23c:	91 05       	cpc	r25, r1
+     23e:	09 f4       	brne	.+2      	; 0x242 <ADC_Init+0x1d6>
+     240:	7f c2       	rjmp	.+1278   	; 0x740 <ADC_Init+0x6d4>
+     242:	2f 81       	ldd	r18, Y+7	; 0x07
+     244:	38 85       	ldd	r19, Y+8	; 0x08
+     246:	21 31       	cpi	r18, 0x11	; 17
+     248:	31 05       	cpc	r19, r1
+     24a:	0c f0       	brlt	.+2      	; 0x24e <ADC_Init+0x1e2>
+     24c:	9d c2       	rjmp	.+1338   	; 0x788 <ADC_Init+0x71c>
+     24e:	54 c2       	rjmp	.+1192   	; 0x6f8 <ADC_Init+0x68c>
+     250:	8f 81       	ldd	r24, Y+7	; 0x07
+     252:	98 85       	ldd	r25, Y+8	; 0x08
+     254:	84 31       	cpi	r24, 0x14	; 20
+     256:	91 05       	cpc	r25, r1
+     258:	09 f4       	brne	.+2      	; 0x25c <ADC_Init+0x1f0>
+     25a:	02 c3       	rjmp	.+1540   	; 0x860 <__stack+0x1>
+     25c:	2f 81       	ldd	r18, Y+7	; 0x07
+     25e:	38 85       	ldd	r19, Y+8	; 0x08
+     260:	25 31       	cpi	r18, 0x15	; 21
+     262:	31 05       	cpc	r19, r1
+     264:	0c f0       	brlt	.+2      	; 0x268 <ADC_Init+0x1fc>
+     266:	20 c3       	rjmp	.+1600   	; 0x8a8 <__stack+0x49>
+     268:	d7 c2       	rjmp	.+1454   	; 0x818 <ADC_Init+0x7ac>
+     26a:	8f 81       	ldd	r24, Y+7	; 0x07
+     26c:	98 85       	ldd	r25, Y+8	; 0x08
+     26e:	8a 31       	cpi	r24, 0x1A	; 26
+     270:	91 05       	cpc	r25, r1
+     272:	09 f4       	brne	.+2      	; 0x276 <ADC_Init+0x20a>
+     274:	cd c3       	rjmp	.+1946   	; 0xa10 <__stack+0x1b1>
+     276:	2f 81       	ldd	r18, Y+7	; 0x07
+     278:	38 85       	ldd	r19, Y+8	; 0x08
+     27a:	2b 31       	cpi	r18, 0x1B	; 27
+     27c:	31 05       	cpc	r19, r1
+     27e:	6c f4       	brge	.+26     	; 0x29a <ADC_Init+0x22e>
+     280:	8f 81       	ldd	r24, Y+7	; 0x07
+     282:	98 85       	ldd	r25, Y+8	; 0x08
+     284:	88 31       	cpi	r24, 0x18	; 24
+     286:	91 05       	cpc	r25, r1
+     288:	09 f4       	brne	.+2      	; 0x28c <ADC_Init+0x220>
+     28a:	7a c3       	rjmp	.+1780   	; 0x980 <__stack+0x121>
+     28c:	2f 81       	ldd	r18, Y+7	; 0x07
+     28e:	38 85       	ldd	r19, Y+8	; 0x08
+     290:	29 31       	cpi	r18, 0x19	; 25
+     292:	31 05       	cpc	r19, r1
+     294:	0c f0       	brlt	.+2      	; 0x298 <ADC_Init+0x22c>
+     296:	98 c3       	rjmp	.+1840   	; 0x9c8 <__stack+0x169>
+     298:	4f c3       	rjmp	.+1694   	; 0x938 <__stack+0xd9>
+     29a:	8f 81       	ldd	r24, Y+7	; 0x07
+     29c:	98 85       	ldd	r25, Y+8	; 0x08
+     29e:	8c 31       	cpi	r24, 0x1C	; 28
+     2a0:	91 05       	cpc	r25, r1
+     2a2:	09 f4       	brne	.+2      	; 0x2a6 <ADC_Init+0x23a>
+     2a4:	fd c3       	rjmp	.+2042   	; 0xaa0 <__stack+0x241>
+     2a6:	2f 81       	ldd	r18, Y+7	; 0x07
+     2a8:	38 85       	ldd	r19, Y+8	; 0x08
+     2aa:	2c 31       	cpi	r18, 0x1C	; 28
+     2ac:	31 05       	cpc	r19, r1
+     2ae:	0c f4       	brge	.+2      	; 0x2b2 <ADC_Init+0x246>
+     2b0:	d3 c3       	rjmp	.+1958   	; 0xa58 <__stack+0x1f9>
+     2b2:	8f 81       	ldd	r24, Y+7	; 0x07
+     2b4:	98 85       	ldd	r25, Y+8	; 0x08
+     2b6:	8d 31       	cpi	r24, 0x1D	; 29
+     2b8:	91 05       	cpc	r25, r1
+     2ba:	09 f4       	brne	.+2      	; 0x2be <ADC_Init+0x252>
+     2bc:	15 c4       	rjmp	.+2090   	; 0xae8 <__stack+0x289>
+     2be:	37 c4       	rjmp	.+2158   	; 0xb2e <__stack+0x2cf>
+
+		// Single Conversion Channels
+
+			//  MUX4 | MUX3 | MUX2 | MUX1 | MUX0 		0 | 0 | 0 | 0 | 0		Channel: ADC0
+			case (CHANNEL_ADC0):
+			CLR_BIT(ADMUX, MUX4); CLR_BIT(ADMUX, MUX3); CLR_BIT(ADMUX, MUX2); CLR_BIT(ADMUX, MUX1); CLR_BIT(ADMUX, MUX0);
+     2c0:	a7 e2       	ldi	r26, 0x27	; 39
+     2c2:	b0 e0       	ldi	r27, 0x00	; 0
+     2c4:	e7 e2       	ldi	r30, 0x27	; 39
+     2c6:	f0 e0       	ldi	r31, 0x00	; 0
+     2c8:	80 81       	ld	r24, Z
+     2ca:	8f 7e       	andi	r24, 0xEF	; 239
+     2cc:	8c 93       	st	X, r24
+     2ce:	a7 e2       	ldi	r26, 0x27	; 39
+     2d0:	b0 e0       	ldi	r27, 0x00	; 0
+     2d2:	e7 e2       	ldi	r30, 0x27	; 39
+     2d4:	f0 e0       	ldi	r31, 0x00	; 0
+     2d6:	80 81       	ld	r24, Z
+     2d8:	87 7f       	andi	r24, 0xF7	; 247
+     2da:	8c 93       	st	X, r24
+     2dc:	a7 e2       	ldi	r26, 0x27	; 39
+     2de:	b0 e0       	ldi	r27, 0x00	; 0
+     2e0:	e7 e2       	ldi	r30, 0x27	; 39
+     2e2:	f0 e0       	ldi	r31, 0x00	; 0
+     2e4:	80 81       	ld	r24, Z
+     2e6:	8b 7f       	andi	r24, 0xFB	; 251
+     2e8:	8c 93       	st	X, r24
+     2ea:	a7 e2       	ldi	r26, 0x27	; 39
+     2ec:	b0 e0       	ldi	r27, 0x00	; 0
+     2ee:	e7 e2       	ldi	r30, 0x27	; 39
+     2f0:	f0 e0       	ldi	r31, 0x00	; 0
+     2f2:	80 81       	ld	r24, Z
+     2f4:	8d 7f       	andi	r24, 0xFD	; 253
+     2f6:	8c 93       	st	X, r24
+     2f8:	a7 e2       	ldi	r26, 0x27	; 39
+     2fa:	b0 e0       	ldi	r27, 0x00	; 0
+     2fc:	e7 e2       	ldi	r30, 0x27	; 39
+     2fe:	f0 e0       	ldi	r31, 0x00	; 0
+     300:	80 81       	ld	r24, Z
+     302:	8e 7f       	andi	r24, 0xFE	; 254
+     304:	8c 93       	st	X, r24
+     306:	13 c4       	rjmp	.+2086   	; 0xb2e <__stack+0x2cf>
+			break;
+
+			//  MUX4 | MUX3 | MUX2 | MUX1 | MUX0 		0 | 0 | 0 | 0 | 1		Channel: ADC1
+			case (CHANNEL_ADC1):
+			CLR_BIT(ADMUX, MUX4); CLR_BIT(ADMUX, MUX3); CLR_BIT(ADMUX, MUX2); CLR_BIT(ADMUX, MUX1); SET_BIT(ADMUX, MUX0);
+     308:	a7 e2       	ldi	r26, 0x27	; 39
+     30a:	b0 e0       	ldi	r27, 0x00	; 0
+     30c:	e7 e2       	ldi	r30, 0x27	; 39
+     30e:	f0 e0       	ldi	r31, 0x00	; 0
+     310:	80 81       	ld	r24, Z
+     312:	8f 7e       	andi	r24, 0xEF	; 239
+     314:	8c 93       	st	X, r24
+     316:	a7 e2       	ldi	r26, 0x27	; 39
+     318:	b0 e0       	ldi	r27, 0x00	; 0
+     31a:	e7 e2       	ldi	r30, 0x27	; 39
+     31c:	f0 e0       	ldi	r31, 0x00	; 0
+     31e:	80 81       	ld	r24, Z
+     320:	87 7f       	andi	r24, 0xF7	; 247
+     322:	8c 93       	st	X, r24
+     324:	a7 e2       	ldi	r26, 0x27	; 39
+     326:	b0 e0       	ldi	r27, 0x00	; 0
+     328:	e7 e2       	ldi	r30, 0x27	; 39
+     32a:	f0 e0       	ldi	r31, 0x00	; 0
+     32c:	80 81       	ld	r24, Z
+     32e:	8b 7f       	andi	r24, 0xFB	; 251
+     330:	8c 93       	st	X, r24
+     332:	a7 e2       	ldi	r26, 0x27	; 39
+     334:	b0 e0       	ldi	r27, 0x00	; 0
+     336:	e7 e2       	ldi	r30, 0x27	; 39
+     338:	f0 e0       	ldi	r31, 0x00	; 0
+     33a:	80 81       	ld	r24, Z
+     33c:	8d 7f       	andi	r24, 0xFD	; 253
+     33e:	8c 93       	st	X, r24
+     340:	a7 e2       	ldi	r26, 0x27	; 39
+     342:	b0 e0       	ldi	r27, 0x00	; 0
+     344:	e7 e2       	ldi	r30, 0x27	; 39
+     346:	f0 e0       	ldi	r31, 0x00	; 0
+     348:	80 81       	ld	r24, Z
+     34a:	81 60       	ori	r24, 0x01	; 1
+     34c:	8c 93       	st	X, r24
+     34e:	ef c3       	rjmp	.+2014   	; 0xb2e <__stack+0x2cf>
+			break;
+
+			//  MUX4 | MUX3 | MUX2 | MUX1 | MUX0 		0 | 0 | 0 | 1 | 0		Channel: ADC2
+			case (CHANNEL_ADC2):
+			CLR_BIT(ADMUX, MUX4); CLR_BIT(ADMUX, MUX3); CLR_BIT(ADMUX, MUX2); SET_BIT(ADMUX, MUX1); CLR_BIT(ADMUX, MUX0);
+     350:	a7 e2       	ldi	r26, 0x27	; 39
+     352:	b0 e0       	ldi	r27, 0x00	; 0
+     354:	e7 e2       	ldi	r30, 0x27	; 39
+     356:	f0 e0       	ldi	r31, 0x00	; 0
+     358:	80 81       	ld	r24, Z
+     35a:	8f 7e       	andi	r24, 0xEF	; 239
+     35c:	8c 93       	st	X, r24
+     35e:	a7 e2       	ldi	r26, 0x27	; 39
+     360:	b0 e0       	ldi	r27, 0x00	; 0
+     362:	e7 e2       	ldi	r30, 0x27	; 39
+     364:	f0 e0       	ldi	r31, 0x00	; 0
+     366:	80 81       	ld	r24, Z
+     368:	87 7f       	andi	r24, 0xF7	; 247
+     36a:	8c 93       	st	X, r24
+     36c:	a7 e2       	ldi	r26, 0x27	; 39
+     36e:	b0 e0       	ldi	r27, 0x00	; 0
+     370:	e7 e2       	ldi	r30, 0x27	; 39
+     372:	f0 e0       	ldi	r31, 0x00	; 0
+     374:	80 81       	ld	r24, Z
+     376:	8b 7f       	andi	r24, 0xFB	; 251
+     378:	8c 93       	st	X, r24
+     37a:	a7 e2       	ldi	r26, 0x27	; 39
+     37c:	b0 e0       	ldi	r27, 0x00	; 0
+     37e:	e7 e2       	ldi	r30, 0x27	; 39
+     380:	f0 e0       	ldi	r31, 0x00	; 0
+     382:	80 81       	ld	r24, Z
+     384:	82 60       	ori	r24, 0x02	; 2
+     386:	8c 93       	st	X, r24
+     388:	a7 e2       	ldi	r26, 0x27	; 39
+     38a:	b0 e0       	ldi	r27, 0x00	; 0
+     38c:	e7 e2       	ldi	r30, 0x27	; 39
+     38e:	f0 e0       	ldi	r31, 0x00	; 0
+     390:	80 81       	ld	r24, Z
+     392:	8e 7f       	andi	r24, 0xFE	; 254
+     394:	8c 93       	st	X, r24
+     396:	cb c3       	rjmp	.+1942   	; 0xb2e <__stack+0x2cf>
+			break;
+
+			//  MUX4 | MUX3 | MUX2 | MUX1 | MUX0 		0 | 0 | 0 | 1 | 1		Channel: ADC3
+			case (CHANNEL_ADC3):
+			CLR_BIT(ADMUX, MUX4); CLR_BIT(ADMUX, MUX3); CLR_BIT(ADMUX, MUX2); SET_BIT(ADMUX, MUX1); SET_BIT(ADMUX, MUX0);
+     398:	a7 e2       	ldi	r26, 0x27	; 39
+     39a:	b0 e0       	ldi	r27, 0x00	; 0
+     39c:	e7 e2       	ldi	r30, 0x27	; 39
+     39e:	f0 e0       	ldi	r31, 0x00	; 0
+     3a0:	80 81       	ld	r24, Z
+     3a2:	8f 7e       	andi	r24, 0xEF	; 239
+     3a4:	8c 93       	st	X, r24
+     3a6:	a7 e2       	ldi	r26, 0x27	; 39
+     3a8:	b0 e0       	ldi	r27, 0x00	; 0
+     3aa:	e7 e2       	ldi	r30, 0x27	; 39
+     3ac:	f0 e0       	ldi	r31, 0x00	; 0
+     3ae:	80 81       	ld	r24, Z
+     3b0:	87 7f       	andi	r24, 0xF7	; 247
+     3b2:	8c 93       	st	X, r24
+     3b4:	a7 e2       	ldi	r26, 0x27	; 39
+     3b6:	b0 e0       	ldi	r27, 0x00	; 0
+     3b8:	e7 e2       	ldi	r30, 0x27	; 39
+     3ba:	f0 e0       	ldi	r31, 0x00	; 0
+     3bc:	80 81       	ld	r24, Z
+     3be:	8b 7f       	andi	r24, 0xFB	; 251
+     3c0:	8c 93       	st	X, r24
+     3c2:	a7 e2       	ldi	r26, 0x27	; 39
+     3c4:	b0 e0       	ldi	r27, 0x00	; 0
+     3c6:	e7 e2       	ldi	r30, 0x27	; 39
+     3c8:	f0 e0       	ldi	r31, 0x00	; 0
+     3ca:	80 81       	ld	r24, Z
+     3cc:	82 60       	ori	r24, 0x02	; 2
+     3ce:	8c 93       	st	X, r24
+     3d0:	a7 e2       	ldi	r26, 0x27	; 39
+     3d2:	b0 e0       	ldi	r27, 0x00	; 0
+     3d4:	e7 e2       	ldi	r30, 0x27	; 39
+     3d6:	f0 e0       	ldi	r31, 0x00	; 0
+     3d8:	80 81       	ld	r24, Z
+     3da:	81 60       	ori	r24, 0x01	; 1
+     3dc:	8c 93       	st	X, r24
+     3de:	a7 c3       	rjmp	.+1870   	; 0xb2e <__stack+0x2cf>
+			break;
+
+			//  MUX4 | MUX3 | MUX2 | MUX1 | MUX0 		0 | 0 | 1 | 0 | 0		Channel: ADC4
+			case (CHANNEL_ADC4):
+			CLR_BIT(ADMUX, MUX4); CLR_BIT(ADMUX, MUX3); SET_BIT(ADMUX, MUX2); CLR_BIT(ADMUX, MUX1); CLR_BIT(ADMUX, MUX0);
+     3e0:	a7 e2       	ldi	r26, 0x27	; 39
+     3e2:	b0 e0       	ldi	r27, 0x00	; 0
+     3e4:	e7 e2       	ldi	r30, 0x27	; 39
+     3e6:	f0 e0       	ldi	r31, 0x00	; 0
+     3e8:	80 81       	ld	r24, Z
+     3ea:	8f 7e       	andi	r24, 0xEF	; 239
+     3ec:	8c 93       	st	X, r24
+     3ee:	a7 e2       	ldi	r26, 0x27	; 39
+     3f0:	b0 e0       	ldi	r27, 0x00	; 0
+     3f2:	e7 e2       	ldi	r30, 0x27	; 39
+     3f4:	f0 e0       	ldi	r31, 0x00	; 0
+     3f6:	80 81       	ld	r24, Z
+     3f8:	87 7f       	andi	r24, 0xF7	; 247
+     3fa:	8c 93       	st	X, r24
+     3fc:	a7 e2       	ldi	r26, 0x27	; 39
+     3fe:	b0 e0       	ldi	r27, 0x00	; 0
+     400:	e7 e2       	ldi	r30, 0x27	; 39
+     402:	f0 e0       	ldi	r31, 0x00	; 0
+     404:	80 81       	ld	r24, Z
+     406:	84 60       	ori	r24, 0x04	; 4
+     408:	8c 93       	st	X, r24
+     40a:	a7 e2       	ldi	r26, 0x27	; 39
+     40c:	b0 e0       	ldi	r27, 0x00	; 0
+     40e:	e7 e2       	ldi	r30, 0x27	; 39
+     410:	f0 e0       	ldi	r31, 0x00	; 0
+     412:	80 81       	ld	r24, Z
+     414:	8d 7f       	andi	r24, 0xFD	; 253
+     416:	8c 93       	st	X, r24
+     418:	a7 e2       	ldi	r26, 0x27	; 39
+     41a:	b0 e0       	ldi	r27, 0x00	; 0
+     41c:	e7 e2       	ldi	r30, 0x27	; 39
+     41e:	f0 e0       	ldi	r31, 0x00	; 0
+     420:	80 81       	ld	r24, Z
+     422:	8e 7f       	andi	r24, 0xFE	; 254
+     424:	8c 93       	st	X, r24
+     426:	83 c3       	rjmp	.+1798   	; 0xb2e <__stack+0x2cf>
+			break;
+
+			//  MUX4 | MUX3 | MUX2 | MUX1 | MUX0 		0 | 0 | 0 | 0 | 0		Channel: ADC5
+			case (CHANNEL_ADC5):
+			CLR_BIT(ADMUX, MUX4); CLR_BIT(ADMUX, MUX3); SET_BIT(ADMUX, MUX2); CLR_BIT(ADMUX, MUX1); SET_BIT(ADMUX, MUX0);
+     428:	a7 e2       	ldi	r26, 0x27	; 39
+     42a:	b0 e0       	ldi	r27, 0x00	; 0
+     42c:	e7 e2       	ldi	r30, 0x27	; 39
+     42e:	f0 e0       	ldi	r31, 0x00	; 0
+     430:	80 81       	ld	r24, Z
+     432:	8f 7e       	andi	r24, 0xEF	; 239
+     434:	8c 93       	st	X, r24
+     436:	a7 e2       	ldi	r26, 0x27	; 39
+     438:	b0 e0       	ldi	r27, 0x00	; 0
+     43a:	e7 e2       	ldi	r30, 0x27	; 39
+     43c:	f0 e0       	ldi	r31, 0x00	; 0
+     43e:	80 81       	ld	r24, Z
+     440:	87 7f       	andi	r24, 0xF7	; 247
+     442:	8c 93       	st	X, r24
+     444:	a7 e2       	ldi	r26, 0x27	; 39
+     446:	b0 e0       	ldi	r27, 0x00	; 0
+     448:	e7 e2       	ldi	r30, 0x27	; 39
+     44a:	f0 e0       	ldi	r31, 0x00	; 0
+     44c:	80 81       	ld	r24, Z
+     44e:	84 60       	ori	r24, 0x04	; 4
+     450:	8c 93       	st	X, r24
+     452:	a7 e2       	ldi	r26, 0x27	; 39
+     454:	b0 e0       	ldi	r27, 0x00	; 0
+     456:	e7 e2       	ldi	r30, 0x27	; 39
+     458:	f0 e0       	ldi	r31, 0x00	; 0
+     45a:	80 81       	ld	r24, Z
+     45c:	8d 7f       	andi	r24, 0xFD	; 253
+     45e:	8c 93       	st	X, r24
+     460:	a7 e2       	ldi	r26, 0x27	; 39
+     462:	b0 e0       	ldi	r27, 0x00	; 0
+     464:	e7 e2       	ldi	r30, 0x27	; 39
+     466:	f0 e0       	ldi	r31, 0x00	; 0
+     468:	80 81       	ld	r24, Z
+     46a:	81 60       	ori	r24, 0x01	; 1
+     46c:	8c 93       	st	X, r24
+     46e:	5f c3       	rjmp	.+1726   	; 0xb2e <__stack+0x2cf>
+			break;
+
+			//  MUX4 | MUX3 | MUX2 | MUX1 | MUX0 		0 | 0 | 1 | 1 | 0		Channel: ADC6
+			case (CHANNEL_ADC6):
+			CLR_BIT(ADMUX, MUX4); CLR_BIT(ADMUX, MUX3); SET_BIT(ADMUX, MUX2); SET_BIT(ADMUX, MUX1); CLR_BIT(ADMUX, MUX0);
+     470:	a7 e2       	ldi	r26, 0x27	; 39
+     472:	b0 e0       	ldi	r27, 0x00	; 0
+     474:	e7 e2       	ldi	r30, 0x27	; 39
+     476:	f0 e0       	ldi	r31, 0x00	; 0
+     478:	80 81       	ld	r24, Z
+     47a:	8f 7e       	andi	r24, 0xEF	; 239
+     47c:	8c 93       	st	X, r24
+     47e:	a7 e2       	ldi	r26, 0x27	; 39
+     480:	b0 e0       	ldi	r27, 0x00	; 0
+     482:	e7 e2       	ldi	r30, 0x27	; 39
+     484:	f0 e0       	ldi	r31, 0x00	; 0
+     486:	80 81       	ld	r24, Z
+     488:	87 7f       	andi	r24, 0xF7	; 247
+     48a:	8c 93       	st	X, r24
+     48c:	a7 e2       	ldi	r26, 0x27	; 39
+     48e:	b0 e0       	ldi	r27, 0x00	; 0
+     490:	e7 e2       	ldi	r30, 0x27	; 39
+     492:	f0 e0       	ldi	r31, 0x00	; 0
+     494:	80 81       	ld	r24, Z
+     496:	84 60       	ori	r24, 0x04	; 4
+     498:	8c 93       	st	X, r24
+     49a:	a7 e2       	ldi	r26, 0x27	; 39
+     49c:	b0 e0       	ldi	r27, 0x00	; 0
+     49e:	e7 e2       	ldi	r30, 0x27	; 39
+     4a0:	f0 e0       	ldi	r31, 0x00	; 0
+     4a2:	80 81       	ld	r24, Z
+     4a4:	82 60       	ori	r24, 0x02	; 2
+     4a6:	8c 93       	st	X, r24
+     4a8:	a7 e2       	ldi	r26, 0x27	; 39
+     4aa:	b0 e0       	ldi	r27, 0x00	; 0
+     4ac:	e7 e2       	ldi	r30, 0x27	; 39
+     4ae:	f0 e0       	ldi	r31, 0x00	; 0
+     4b0:	80 81       	ld	r24, Z
+     4b2:	8e 7f       	andi	r24, 0xFE	; 254
+     4b4:	8c 93       	st	X, r24
+     4b6:	3b c3       	rjmp	.+1654   	; 0xb2e <__stack+0x2cf>
+			break;
+
+			//  MUX4 | MUX3 | MUX2 | MUX1 | MUX0 		0 | 0 | 1 | 1 | 1		Channel: ADC7
+			case (CHANNEL_ADC7): // 00111
+			CLR_BIT(ADMUX, MUX4); CLR_BIT(ADMUX, MUX3); SET_BIT(ADMUX, MUX2); SET_BIT(ADMUX, MUX1); SET_BIT(ADMUX, MUX0);
+     4b8:	a7 e2       	ldi	r26, 0x27	; 39
+     4ba:	b0 e0       	ldi	r27, 0x00	; 0
+     4bc:	e7 e2       	ldi	r30, 0x27	; 39
+     4be:	f0 e0       	ldi	r31, 0x00	; 0
+     4c0:	80 81       	ld	r24, Z
+     4c2:	8f 7e       	andi	r24, 0xEF	; 239
+     4c4:	8c 93       	st	X, r24
+     4c6:	a7 e2       	ldi	r26, 0x27	; 39
+     4c8:	b0 e0       	ldi	r27, 0x00	; 0
+     4ca:	e7 e2       	ldi	r30, 0x27	; 39
+     4cc:	f0 e0       	ldi	r31, 0x00	; 0
+     4ce:	80 81       	ld	r24, Z
+     4d0:	87 7f       	andi	r24, 0xF7	; 247
+     4d2:	8c 93       	st	X, r24
+     4d4:	a7 e2       	ldi	r26, 0x27	; 39
+     4d6:	b0 e0       	ldi	r27, 0x00	; 0
+     4d8:	e7 e2       	ldi	r30, 0x27	; 39
+     4da:	f0 e0       	ldi	r31, 0x00	; 0
+     4dc:	80 81       	ld	r24, Z
+     4de:	84 60       	ori	r24, 0x04	; 4
+     4e0:	8c 93       	st	X, r24
+     4e2:	a7 e2       	ldi	r26, 0x27	; 39
+     4e4:	b0 e0       	ldi	r27, 0x00	; 0
+     4e6:	e7 e2       	ldi	r30, 0x27	; 39
+     4e8:	f0 e0       	ldi	r31, 0x00	; 0
+     4ea:	80 81       	ld	r24, Z
+     4ec:	82 60       	ori	r24, 0x02	; 2
+     4ee:	8c 93       	st	X, r24
+     4f0:	a7 e2       	ldi	r26, 0x27	; 39
+     4f2:	b0 e0       	ldi	r27, 0x00	; 0
+     4f4:	e7 e2       	ldi	r30, 0x27	; 39
+     4f6:	f0 e0       	ldi	r31, 0x00	; 0
+     4f8:	80 81       	ld	r24, Z
+     4fa:	81 60       	ori	r24, 0x01	; 1
+     4fc:	8c 93       	st	X, r24
+     4fe:	17 c3       	rjmp	.+1582   	; 0xb2e <__stack+0x2cf>
+
+		// Differential (1st Signal - 2nd Signal) * Gain
+
+			//  MUX4 | MUX3 | MUX2 | MUX1 | MUX0 		0 | 1 | 0 | 0 | 0		Channel: (ADC0 - ADC0)*10
+			case (CHANNEL_ADC0_ADC0_10):
+			CLR_BIT(ADMUX, MUX4); SET_BIT(ADMUX, MUX3); CLR_BIT(ADMUX, MUX2); CLR_BIT(ADMUX, MUX1); CLR_BIT(ADMUX, MUX0);
+     500:	a7 e2       	ldi	r26, 0x27	; 39
+     502:	b0 e0       	ldi	r27, 0x00	; 0
+     504:	e7 e2       	ldi	r30, 0x27	; 39
+     506:	f0 e0       	ldi	r31, 0x00	; 0
+     508:	80 81       	ld	r24, Z
+     50a:	8f 7e       	andi	r24, 0xEF	; 239
+     50c:	8c 93       	st	X, r24
+     50e:	a7 e2       	ldi	r26, 0x27	; 39
+     510:	b0 e0       	ldi	r27, 0x00	; 0
+     512:	e7 e2       	ldi	r30, 0x27	; 39
+     514:	f0 e0       	ldi	r31, 0x00	; 0
+     516:	80 81       	ld	r24, Z
+     518:	88 60       	ori	r24, 0x08	; 8
+     51a:	8c 93       	st	X, r24
+     51c:	a7 e2       	ldi	r26, 0x27	; 39
+     51e:	b0 e0       	ldi	r27, 0x00	; 0
+     520:	e7 e2       	ldi	r30, 0x27	; 39
+     522:	f0 e0       	ldi	r31, 0x00	; 0
+     524:	80 81       	ld	r24, Z
+     526:	8b 7f       	andi	r24, 0xFB	; 251
+     528:	8c 93       	st	X, r24
+     52a:	a7 e2       	ldi	r26, 0x27	; 39
+     52c:	b0 e0       	ldi	r27, 0x00	; 0
+     52e:	e7 e2       	ldi	r30, 0x27	; 39
+     530:	f0 e0       	ldi	r31, 0x00	; 0
+     532:	80 81       	ld	r24, Z
+     534:	8d 7f       	andi	r24, 0xFD	; 253
+     536:	8c 93       	st	X, r24
+     538:	a7 e2       	ldi	r26, 0x27	; 39
+     53a:	b0 e0       	ldi	r27, 0x00	; 0
+     53c:	e7 e2       	ldi	r30, 0x27	; 39
+     53e:	f0 e0       	ldi	r31, 0x00	; 0
+     540:	80 81       	ld	r24, Z
+     542:	8e 7f       	andi	r24, 0xFE	; 254
+     544:	8c 93       	st	X, r24
+     546:	f3 c2       	rjmp	.+1510   	; 0xb2e <__stack+0x2cf>
+			break;
+
+			//  MUX4 | MUX3 | MUX2 | MUX1 | MUX0 		0 | 1 | 0 | 0 | 1		Channel: (ADC1 - ADC0)*10
+			case (CHANNEL_ADC1_ADC0_10):
+			CLR_BIT(ADMUX, MUX4); SET_BIT(ADMUX, MUX3); CLR_BIT(ADMUX, MUX2); CLR_BIT(ADMUX, MUX1); SET_BIT(ADMUX, MUX0);
+     548:	a7 e2       	ldi	r26, 0x27	; 39
+     54a:	b0 e0       	ldi	r27, 0x00	; 0
+     54c:	e7 e2       	ldi	r30, 0x27	; 39
+     54e:	f0 e0       	ldi	r31, 0x00	; 0
+     550:	80 81       	ld	r24, Z
+     552:	8f 7e       	andi	r24, 0xEF	; 239
+     554:	8c 93       	st	X, r24
+     556:	a7 e2       	ldi	r26, 0x27	; 39
+     558:	b0 e0       	ldi	r27, 0x00	; 0
+     55a:	e7 e2       	ldi	r30, 0x27	; 39
+     55c:	f0 e0       	ldi	r31, 0x00	; 0
+     55e:	80 81       	ld	r24, Z
+     560:	88 60       	ori	r24, 0x08	; 8
+     562:	8c 93       	st	X, r24
+     564:	a7 e2       	ldi	r26, 0x27	; 39
+     566:	b0 e0       	ldi	r27, 0x00	; 0
+     568:	e7 e2       	ldi	r30, 0x27	; 39
+     56a:	f0 e0       	ldi	r31, 0x00	; 0
+     56c:	80 81       	ld	r24, Z
+     56e:	8b 7f       	andi	r24, 0xFB	; 251
+     570:	8c 93       	st	X, r24
+     572:	a7 e2       	ldi	r26, 0x27	; 39
+     574:	b0 e0       	ldi	r27, 0x00	; 0
+     576:	e7 e2       	ldi	r30, 0x27	; 39
+     578:	f0 e0       	ldi	r31, 0x00	; 0
+     57a:	80 81       	ld	r24, Z
+     57c:	8d 7f       	andi	r24, 0xFD	; 253
+     57e:	8c 93       	st	X, r24
+     580:	a7 e2       	ldi	r26, 0x27	; 39
+     582:	b0 e0       	ldi	r27, 0x00	; 0
+     584:	e7 e2       	ldi	r30, 0x27	; 39
+     586:	f0 e0       	ldi	r31, 0x00	; 0
+     588:	80 81       	ld	r24, Z
+     58a:	81 60       	ori	r24, 0x01	; 1
+     58c:	8c 93       	st	X, r24
+     58e:	cf c2       	rjmp	.+1438   	; 0xb2e <__stack+0x2cf>
+			break;
+
+			//  MUX4 | MUX3 | MUX2 | MUX1 | MUX0 		0 | 1 | 0 | 1 | 0		Channel: (ADC0 - ADC0)*200
+			case (CHANNEL_ADC0_ADC0_200):
+			CLR_BIT(ADMUX, MUX4); SET_BIT(ADMUX, MUX3); CLR_BIT(ADMUX, MUX2); SET_BIT(ADMUX, MUX1); CLR_BIT(ADMUX, MUX0);
+     590:	a7 e2       	ldi	r26, 0x27	; 39
+     592:	b0 e0       	ldi	r27, 0x00	; 0
+     594:	e7 e2       	ldi	r30, 0x27	; 39
+     596:	f0 e0       	ldi	r31, 0x00	; 0
+     598:	80 81       	ld	r24, Z
+     59a:	8f 7e       	andi	r24, 0xEF	; 239
+     59c:	8c 93       	st	X, r24
+     59e:	a7 e2       	ldi	r26, 0x27	; 39
+     5a0:	b0 e0       	ldi	r27, 0x00	; 0
+     5a2:	e7 e2       	ldi	r30, 0x27	; 39
+     5a4:	f0 e0       	ldi	r31, 0x00	; 0
+     5a6:	80 81       	ld	r24, Z
+     5a8:	88 60       	ori	r24, 0x08	; 8
+     5aa:	8c 93       	st	X, r24
+     5ac:	a7 e2       	ldi	r26, 0x27	; 39
+     5ae:	b0 e0       	ldi	r27, 0x00	; 0
+     5b0:	e7 e2       	ldi	r30, 0x27	; 39
+     5b2:	f0 e0       	ldi	r31, 0x00	; 0
+     5b4:	80 81       	ld	r24, Z
+     5b6:	8b 7f       	andi	r24, 0xFB	; 251
+     5b8:	8c 93       	st	X, r24
+     5ba:	a7 e2       	ldi	r26, 0x27	; 39
+     5bc:	b0 e0       	ldi	r27, 0x00	; 0
+     5be:	e7 e2       	ldi	r30, 0x27	; 39
+     5c0:	f0 e0       	ldi	r31, 0x00	; 0
+     5c2:	80 81       	ld	r24, Z
+     5c4:	82 60       	ori	r24, 0x02	; 2
+     5c6:	8c 93       	st	X, r24
+     5c8:	a7 e2       	ldi	r26, 0x27	; 39
+     5ca:	b0 e0       	ldi	r27, 0x00	; 0
+     5cc:	e7 e2       	ldi	r30, 0x27	; 39
+     5ce:	f0 e0       	ldi	r31, 0x00	; 0
+     5d0:	80 81       	ld	r24, Z
+     5d2:	8e 7f       	andi	r24, 0xFE	; 254
+     5d4:	8c 93       	st	X, r24
+     5d6:	ab c2       	rjmp	.+1366   	; 0xb2e <__stack+0x2cf>
+			break;
+
+			//  MUX4 | MUX3 | MUX2 | MUX1 | MUX0 		0 | 1 | 0 | 1 | 1		Channel: (ADC1 - ADC0)*200
+			case (CHANNEL_ADC1_ADC0_200):
+			CLR_BIT(ADMUX, MUX4); SET_BIT(ADMUX, MUX3); CLR_BIT(ADMUX, MUX2); SET_BIT(ADMUX, MUX1); SET_BIT(ADMUX, MUX0);
+     5d8:	a7 e2       	ldi	r26, 0x27	; 39
+     5da:	b0 e0       	ldi	r27, 0x00	; 0
+     5dc:	e7 e2       	ldi	r30, 0x27	; 39
+     5de:	f0 e0       	ldi	r31, 0x00	; 0
+     5e0:	80 81       	ld	r24, Z
+     5e2:	8f 7e       	andi	r24, 0xEF	; 239
+     5e4:	8c 93       	st	X, r24
+     5e6:	a7 e2       	ldi	r26, 0x27	; 39
+     5e8:	b0 e0       	ldi	r27, 0x00	; 0
+     5ea:	e7 e2       	ldi	r30, 0x27	; 39
+     5ec:	f0 e0       	ldi	r31, 0x00	; 0
+     5ee:	80 81       	ld	r24, Z
+     5f0:	88 60       	ori	r24, 0x08	; 8
+     5f2:	8c 93       	st	X, r24
+     5f4:	a7 e2       	ldi	r26, 0x27	; 39
+     5f6:	b0 e0       	ldi	r27, 0x00	; 0
+     5f8:	e7 e2       	ldi	r30, 0x27	; 39
+     5fa:	f0 e0       	ldi	r31, 0x00	; 0
+     5fc:	80 81       	ld	r24, Z
+     5fe:	8b 7f       	andi	r24, 0xFB	; 251
+     600:	8c 93       	st	X, r24
+     602:	a7 e2       	ldi	r26, 0x27	; 39
+     604:	b0 e0       	ldi	r27, 0x00	; 0
+     606:	e7 e2       	ldi	r30, 0x27	; 39
+     608:	f0 e0       	ldi	r31, 0x00	; 0
+     60a:	80 81       	ld	r24, Z
+     60c:	82 60       	ori	r24, 0x02	; 2
+     60e:	8c 93       	st	X, r24
+     610:	a7 e2       	ldi	r26, 0x27	; 39
+     612:	b0 e0       	ldi	r27, 0x00	; 0
+     614:	e7 e2       	ldi	r30, 0x27	; 39
+     616:	f0 e0       	ldi	r31, 0x00	; 0
+     618:	80 81       	ld	r24, Z
+     61a:	81 60       	ori	r24, 0x01	; 1
+     61c:	8c 93       	st	X, r24
+     61e:	87 c2       	rjmp	.+1294   	; 0xb2e <__stack+0x2cf>
+			break;
+
+			//  MUX4 | MUX3 | MUX2 | MUX1 | MUX0 		0 | 1 | 1 | 0 | 0		Channel: (ADC2 - ADC2)*10
+			case (CHANNEL_ADC2_ADC2_10):
+			CLR_BIT(ADMUX, MUX4); SET_BIT(ADMUX, MUX3); SET_BIT(ADMUX, MUX2); CLR_BIT(ADMUX, MUX1); CLR_BIT(ADMUX, MUX0);
+     620:	a7 e2       	ldi	r26, 0x27	; 39
+     622:	b0 e0       	ldi	r27, 0x00	; 0
+     624:	e7 e2       	ldi	r30, 0x27	; 39
+     626:	f0 e0       	ldi	r31, 0x00	; 0
+     628:	80 81       	ld	r24, Z
+     62a:	8f 7e       	andi	r24, 0xEF	; 239
+     62c:	8c 93       	st	X, r24
+     62e:	a7 e2       	ldi	r26, 0x27	; 39
+     630:	b0 e0       	ldi	r27, 0x00	; 0
+     632:	e7 e2       	ldi	r30, 0x27	; 39
+     634:	f0 e0       	ldi	r31, 0x00	; 0
+     636:	80 81       	ld	r24, Z
+     638:	88 60       	ori	r24, 0x08	; 8
+     63a:	8c 93       	st	X, r24
+     63c:	a7 e2       	ldi	r26, 0x27	; 39
+     63e:	b0 e0       	ldi	r27, 0x00	; 0
+     640:	e7 e2       	ldi	r30, 0x27	; 39
+     642:	f0 e0       	ldi	r31, 0x00	; 0
+     644:	80 81       	ld	r24, Z
+     646:	84 60       	ori	r24, 0x04	; 4
+     648:	8c 93       	st	X, r24
+     64a:	a7 e2       	ldi	r26, 0x27	; 39
+     64c:	b0 e0       	ldi	r27, 0x00	; 0
+     64e:	e7 e2       	ldi	r30, 0x27	; 39
+     650:	f0 e0       	ldi	r31, 0x00	; 0
+     652:	80 81       	ld	r24, Z
+     654:	8d 7f       	andi	r24, 0xFD	; 253
+     656:	8c 93       	st	X, r24
+     658:	a7 e2       	ldi	r26, 0x27	; 39
+     65a:	b0 e0       	ldi	r27, 0x00	; 0
+     65c:	e7 e2       	ldi	r30, 0x27	; 39
+     65e:	f0 e0       	ldi	r31, 0x00	; 0
+     660:	80 81       	ld	r24, Z
+     662:	8e 7f       	andi	r24, 0xFE	; 254
+     664:	8c 93       	st	X, r24
+     666:	63 c2       	rjmp	.+1222   	; 0xb2e <__stack+0x2cf>
+			break;
+
+			//  MUX4 | MUX3 | MUX2 | MUX1 | MUX0 		0 | 1 | 1 | 0 | 1		Channel: (ADC3 - ADC2)*10
+			case (CHANNEL_ADC3_ADC2_10):
+			CLR_BIT(ADMUX, MUX4); SET_BIT(ADMUX, MUX3); SET_BIT(ADMUX, MUX2); CLR_BIT(ADMUX, MUX1); SET_BIT(ADMUX, MUX0);
+     668:	a7 e2       	ldi	r26, 0x27	; 39
+     66a:	b0 e0       	ldi	r27, 0x00	; 0
+     66c:	e7 e2       	ldi	r30, 0x27	; 39
+     66e:	f0 e0       	ldi	r31, 0x00	; 0
+     670:	80 81       	ld	r24, Z
+     672:	8f 7e       	andi	r24, 0xEF	; 239
+     674:	8c 93       	st	X, r24
+     676:	a7 e2       	ldi	r26, 0x27	; 39
+     678:	b0 e0       	ldi	r27, 0x00	; 0
+     67a:	e7 e2       	ldi	r30, 0x27	; 39
+     67c:	f0 e0       	ldi	r31, 0x00	; 0
+     67e:	80 81       	ld	r24, Z
+     680:	88 60       	ori	r24, 0x08	; 8
+     682:	8c 93       	st	X, r24
+     684:	a7 e2       	ldi	r26, 0x27	; 39
+     686:	b0 e0       	ldi	r27, 0x00	; 0
+     688:	e7 e2       	ldi	r30, 0x27	; 39
+     68a:	f0 e0       	ldi	r31, 0x00	; 0
+     68c:	80 81       	ld	r24, Z
+     68e:	84 60       	ori	r24, 0x04	; 4
+     690:	8c 93       	st	X, r24
+     692:	a7 e2       	ldi	r26, 0x27	; 39
+     694:	b0 e0       	ldi	r27, 0x00	; 0
+     696:	e7 e2       	ldi	r30, 0x27	; 39
+     698:	f0 e0       	ldi	r31, 0x00	; 0
+     69a:	80 81       	ld	r24, Z
+     69c:	8d 7f       	andi	r24, 0xFD	; 253
+     69e:	8c 93       	st	X, r24
+     6a0:	a7 e2       	ldi	r26, 0x27	; 39
+     6a2:	b0 e0       	ldi	r27, 0x00	; 0
+     6a4:	e7 e2       	ldi	r30, 0x27	; 39
+     6a6:	f0 e0       	ldi	r31, 0x00	; 0
+     6a8:	80 81       	ld	r24, Z
+     6aa:	81 60       	ori	r24, 0x01	; 1
+     6ac:	8c 93       	st	X, r24
+     6ae:	3f c2       	rjmp	.+1150   	; 0xb2e <__stack+0x2cf>
+			break;
+
+			//  MUX4 | MUX3 | MUX2 | MUX1 | MUX0 		0 | 1 | 1 | 1 | 0		Channel: (ADC2 - ADC2)*200
+			case (CHANNEL_ADC2_ADC2_200):
+			CLR_BIT(ADMUX, MUX4); SET_BIT(ADMUX, MUX3); SET_BIT(ADMUX, MUX2); SET_BIT(ADMUX, MUX1); CLR_BIT(ADMUX, MUX0);
+     6b0:	a7 e2       	ldi	r26, 0x27	; 39
+     6b2:	b0 e0       	ldi	r27, 0x00	; 0
+     6b4:	e7 e2       	ldi	r30, 0x27	; 39
+     6b6:	f0 e0       	ldi	r31, 0x00	; 0
+     6b8:	80 81       	ld	r24, Z
+     6ba:	8f 7e       	andi	r24, 0xEF	; 239
+     6bc:	8c 93       	st	X, r24
+     6be:	a7 e2       	ldi	r26, 0x27	; 39
+     6c0:	b0 e0       	ldi	r27, 0x00	; 0
+     6c2:	e7 e2       	ldi	r30, 0x27	; 39
+     6c4:	f0 e0       	ldi	r31, 0x00	; 0
+     6c6:	80 81       	ld	r24, Z
+     6c8:	88 60       	ori	r24, 0x08	; 8
+     6ca:	8c 93       	st	X, r24
+     6cc:	a7 e2       	ldi	r26, 0x27	; 39
+     6ce:	b0 e0       	ldi	r27, 0x00	; 0
+     6d0:	e7 e2       	ldi	r30, 0x27	; 39
+     6d2:	f0 e0       	ldi	r31, 0x00	; 0
+     6d4:	80 81       	ld	r24, Z
+     6d6:	84 60       	ori	r24, 0x04	; 4
+     6d8:	8c 93       	st	X, r24
+     6da:	a7 e2       	ldi	r26, 0x27	; 39
+     6dc:	b0 e0       	ldi	r27, 0x00	; 0
+     6de:	e7 e2       	ldi	r30, 0x27	; 39
+     6e0:	f0 e0       	ldi	r31, 0x00	; 0
+     6e2:	80 81       	ld	r24, Z
+     6e4:	82 60       	ori	r24, 0x02	; 2
+     6e6:	8c 93       	st	X, r24
+     6e8:	a7 e2       	ldi	r26, 0x27	; 39
+     6ea:	b0 e0       	ldi	r27, 0x00	; 0
+     6ec:	e7 e2       	ldi	r30, 0x27	; 39
+     6ee:	f0 e0       	ldi	r31, 0x00	; 0
+     6f0:	80 81       	ld	r24, Z
+     6f2:	8e 7f       	andi	r24, 0xFE	; 254
+     6f4:	8c 93       	st	X, r24
+     6f6:	1b c2       	rjmp	.+1078   	; 0xb2e <__stack+0x2cf>
+			break;
+
+			//  MUX4 | MUX3 | MUX2 | MUX1 | MUX0 		0 | 1 | 1 | 1 | 1		Channel: (ADC3 - ADC2)*200
+			case (CHANNEL_ADC3_ADC2_200):
+			CLR_BIT(ADMUX, MUX4); SET_BIT(ADMUX, MUX3); SET_BIT(ADMUX, MUX2); SET_BIT(ADMUX, MUX1); SET_BIT(ADMUX, MUX0);
+     6f8:	a7 e2       	ldi	r26, 0x27	; 39
+     6fa:	b0 e0       	ldi	r27, 0x00	; 0
+     6fc:	e7 e2       	ldi	r30, 0x27	; 39
+     6fe:	f0 e0       	ldi	r31, 0x00	; 0
+     700:	80 81       	ld	r24, Z
+     702:	8f 7e       	andi	r24, 0xEF	; 239
+     704:	8c 93       	st	X, r24
+     706:	a7 e2       	ldi	r26, 0x27	; 39
+     708:	b0 e0       	ldi	r27, 0x00	; 0
+     70a:	e7 e2       	ldi	r30, 0x27	; 39
+     70c:	f0 e0       	ldi	r31, 0x00	; 0
+     70e:	80 81       	ld	r24, Z
+     710:	88 60       	ori	r24, 0x08	; 8
+     712:	8c 93       	st	X, r24
+     714:	a7 e2       	ldi	r26, 0x27	; 39
+     716:	b0 e0       	ldi	r27, 0x00	; 0
+     718:	e7 e2       	ldi	r30, 0x27	; 39
+     71a:	f0 e0       	ldi	r31, 0x00	; 0
+     71c:	80 81       	ld	r24, Z
+     71e:	84 60       	ori	r24, 0x04	; 4
+     720:	8c 93       	st	X, r24
+     722:	a7 e2       	ldi	r26, 0x27	; 39
+     724:	b0 e0       	ldi	r27, 0x00	; 0
+     726:	e7 e2       	ldi	r30, 0x27	; 39
+     728:	f0 e0       	ldi	r31, 0x00	; 0
+     72a:	80 81       	ld	r24, Z
+     72c:	82 60       	ori	r24, 0x02	; 2
+     72e:	8c 93       	st	X, r24
+     730:	a7 e2       	ldi	r26, 0x27	; 39
+     732:	b0 e0       	ldi	r27, 0x00	; 0
+     734:	e7 e2       	ldi	r30, 0x27	; 39
+     736:	f0 e0       	ldi	r31, 0x00	; 0
+     738:	80 81       	ld	r24, Z
+     73a:	81 60       	ori	r24, 0x01	; 1
+     73c:	8c 93       	st	X, r24
+     73e:	f7 c1       	rjmp	.+1006   	; 0xb2e <__stack+0x2cf>
+			break;
+
+			//  MUX4 | MUX3 | MUX2 | MUX1 | MUX0 		1 | 0 | 0 | 0 | 0		Channel: (ADC0 - ADC1)*1
+			case (CHANNEL_ADC0_ADC1_1):
+			SET_BIT(ADMUX, MUX4); CLR_BIT(ADMUX, MUX3); CLR_BIT(ADMUX, MUX2); CLR_BIT(ADMUX, MUX1); CLR_BIT(ADMUX, MUX0);
+     740:	a7 e2       	ldi	r26, 0x27	; 39
+     742:	b0 e0       	ldi	r27, 0x00	; 0
+     744:	e7 e2       	ldi	r30, 0x27	; 39
+     746:	f0 e0       	ldi	r31, 0x00	; 0
+     748:	80 81       	ld	r24, Z
+     74a:	80 61       	ori	r24, 0x10	; 16
+     74c:	8c 93       	st	X, r24
+     74e:	a7 e2       	ldi	r26, 0x27	; 39
+     750:	b0 e0       	ldi	r27, 0x00	; 0
+     752:	e7 e2       	ldi	r30, 0x27	; 39
+     754:	f0 e0       	ldi	r31, 0x00	; 0
+     756:	80 81       	ld	r24, Z
+     758:	87 7f       	andi	r24, 0xF7	; 247
+     75a:	8c 93       	st	X, r24
+     75c:	a7 e2       	ldi	r26, 0x27	; 39
+     75e:	b0 e0       	ldi	r27, 0x00	; 0
+     760:	e7 e2       	ldi	r30, 0x27	; 39
+     762:	f0 e0       	ldi	r31, 0x00	; 0
+     764:	80 81       	ld	r24, Z
+     766:	8b 7f       	andi	r24, 0xFB	; 251
+     768:	8c 93       	st	X, r24
+     76a:	a7 e2       	ldi	r26, 0x27	; 39
+     76c:	b0 e0       	ldi	r27, 0x00	; 0
+     76e:	e7 e2       	ldi	r30, 0x27	; 39
+     770:	f0 e0       	ldi	r31, 0x00	; 0
+     772:	80 81       	ld	r24, Z
+     774:	8d 7f       	andi	r24, 0xFD	; 253
+     776:	8c 93       	st	X, r24
+     778:	a7 e2       	ldi	r26, 0x27	; 39
+     77a:	b0 e0       	ldi	r27, 0x00	; 0
+     77c:	e7 e2       	ldi	r30, 0x27	; 39
+     77e:	f0 e0       	ldi	r31, 0x00	; 0
+     780:	80 81       	ld	r24, Z
+     782:	8e 7f       	andi	r24, 0xFE	; 254
+     784:	8c 93       	st	X, r24
+     786:	d3 c1       	rjmp	.+934    	; 0xb2e <__stack+0x2cf>
+			break;
+
+			//  MUX4 | MUX3 | MUX2 | MUX1 | MUX0 		1 | 0 | 0 | 0 | 1		Channel: (ADC1 - ADC1)*1
+			case (CHANNEL_ADC1_ADC1_1):
+			SET_BIT(ADMUX, MUX4); CLR_BIT(ADMUX, MUX3); CLR_BIT(ADMUX, MUX2); CLR_BIT(ADMUX, MUX1); SET_BIT(ADMUX, MUX0);
+     788:	a7 e2       	ldi	r26, 0x27	; 39
+     78a:	b0 e0       	ldi	r27, 0x00	; 0
+     78c:	e7 e2       	ldi	r30, 0x27	; 39
+     78e:	f0 e0       	ldi	r31, 0x00	; 0
+     790:	80 81       	ld	r24, Z
+     792:	80 61       	ori	r24, 0x10	; 16
+     794:	8c 93       	st	X, r24
+     796:	a7 e2       	ldi	r26, 0x27	; 39
+     798:	b0 e0       	ldi	r27, 0x00	; 0
+     79a:	e7 e2       	ldi	r30, 0x27	; 39
+     79c:	f0 e0       	ldi	r31, 0x00	; 0
+     79e:	80 81       	ld	r24, Z
+     7a0:	87 7f       	andi	r24, 0xF7	; 247
+     7a2:	8c 93       	st	X, r24
+     7a4:	a7 e2       	ldi	r26, 0x27	; 39
+     7a6:	b0 e0       	ldi	r27, 0x00	; 0
+     7a8:	e7 e2       	ldi	r30, 0x27	; 39
+     7aa:	f0 e0       	ldi	r31, 0x00	; 0
+     7ac:	80 81       	ld	r24, Z
+     7ae:	8b 7f       	andi	r24, 0xFB	; 251
+     7b0:	8c 93       	st	X, r24
+     7b2:	a7 e2       	ldi	r26, 0x27	; 39
+     7b4:	b0 e0       	ldi	r27, 0x00	; 0
+     7b6:	e7 e2       	ldi	r30, 0x27	; 39
+     7b8:	f0 e0       	ldi	r31, 0x00	; 0
+     7ba:	80 81       	ld	r24, Z
+     7bc:	8d 7f       	andi	r24, 0xFD	; 253
+     7be:	8c 93       	st	X, r24
+     7c0:	a7 e2       	ldi	r26, 0x27	; 39
+     7c2:	b0 e0       	ldi	r27, 0x00	; 0
+     7c4:	e7 e2       	ldi	r30, 0x27	; 39
+     7c6:	f0 e0       	ldi	r31, 0x00	; 0
+     7c8:	80 81       	ld	r24, Z
+     7ca:	81 60       	ori	r24, 0x01	; 1
+     7cc:	8c 93       	st	X, r24
+     7ce:	af c1       	rjmp	.+862    	; 0xb2e <__stack+0x2cf>
+			break;
+
+			//  MUX4 | MUX3 | MUX2 | MUX1 | MUX0 		1 | 0 | 0 | 1 | 0		Channel: (ADC2 - ADC1)*1
+			case (CHANNEL_ADC2_ADC1_1):
+			SET_BIT(ADMUX, MUX4); CLR_BIT(ADMUX, MUX3); CLR_BIT(ADMUX, MUX2); SET_BIT(ADMUX, MUX1); CLR_BIT(ADMUX, MUX0);
+     7d0:	a7 e2       	ldi	r26, 0x27	; 39
+     7d2:	b0 e0       	ldi	r27, 0x00	; 0
+     7d4:	e7 e2       	ldi	r30, 0x27	; 39
+     7d6:	f0 e0       	ldi	r31, 0x00	; 0
+     7d8:	80 81       	ld	r24, Z
+     7da:	80 61       	ori	r24, 0x10	; 16
+     7dc:	8c 93       	st	X, r24
+     7de:	a7 e2       	ldi	r26, 0x27	; 39
+     7e0:	b0 e0       	ldi	r27, 0x00	; 0
+     7e2:	e7 e2       	ldi	r30, 0x27	; 39
+     7e4:	f0 e0       	ldi	r31, 0x00	; 0
+     7e6:	80 81       	ld	r24, Z
+     7e8:	87 7f       	andi	r24, 0xF7	; 247
+     7ea:	8c 93       	st	X, r24
+     7ec:	a7 e2       	ldi	r26, 0x27	; 39
+     7ee:	b0 e0       	ldi	r27, 0x00	; 0
+     7f0:	e7 e2       	ldi	r30, 0x27	; 39
+     7f2:	f0 e0       	ldi	r31, 0x00	; 0
+     7f4:	80 81       	ld	r24, Z
+     7f6:	8b 7f       	andi	r24, 0xFB	; 251
+     7f8:	8c 93       	st	X, r24
+     7fa:	a7 e2       	ldi	r26, 0x27	; 39
+     7fc:	b0 e0       	ldi	r27, 0x00	; 0
+     7fe:	e7 e2       	ldi	r30, 0x27	; 39
+     800:	f0 e0       	ldi	r31, 0x00	; 0
+     802:	80 81       	ld	r24, Z
+     804:	82 60       	ori	r24, 0x02	; 2
+     806:	8c 93       	st	X, r24
+     808:	a7 e2       	ldi	r26, 0x27	; 39
+     80a:	b0 e0       	ldi	r27, 0x00	; 0
+     80c:	e7 e2       	ldi	r30, 0x27	; 39
+     80e:	f0 e0       	ldi	r31, 0x00	; 0
+     810:	80 81       	ld	r24, Z
+     812:	8e 7f       	andi	r24, 0xFE	; 254
+     814:	8c 93       	st	X, r24
+     816:	8b c1       	rjmp	.+790    	; 0xb2e <__stack+0x2cf>
+			break;
+
+			//  MUX4 | MUX3 | MUX2 | MUX1 | MUX0 		1 | 0 | 0 | 1 | 1		Channel: (ADC3 - ADC1)*1
+			case (CHANNEL_ADC3_ADC1_1):
+			SET_BIT(ADMUX, MUX4); CLR_BIT(ADMUX, MUX3); CLR_BIT(ADMUX, MUX2); SET_BIT(ADMUX, MUX1); SET_BIT(ADMUX, MUX0);
+     818:	a7 e2       	ldi	r26, 0x27	; 39
+     81a:	b0 e0       	ldi	r27, 0x00	; 0
+     81c:	e7 e2       	ldi	r30, 0x27	; 39
+     81e:	f0 e0       	ldi	r31, 0x00	; 0
+     820:	80 81       	ld	r24, Z
+     822:	80 61       	ori	r24, 0x10	; 16
+     824:	8c 93       	st	X, r24
+     826:	a7 e2       	ldi	r26, 0x27	; 39
+     828:	b0 e0       	ldi	r27, 0x00	; 0
+     82a:	e7 e2       	ldi	r30, 0x27	; 39
+     82c:	f0 e0       	ldi	r31, 0x00	; 0
+     82e:	80 81       	ld	r24, Z
+     830:	87 7f       	andi	r24, 0xF7	; 247
+     832:	8c 93       	st	X, r24
+     834:	a7 e2       	ldi	r26, 0x27	; 39
+     836:	b0 e0       	ldi	r27, 0x00	; 0
+     838:	e7 e2       	ldi	r30, 0x27	; 39
+     83a:	f0 e0       	ldi	r31, 0x00	; 0
+     83c:	80 81       	ld	r24, Z
+     83e:	8b 7f       	andi	r24, 0xFB	; 251
+     840:	8c 93       	st	X, r24
+     842:	a7 e2       	ldi	r26, 0x27	; 39
+     844:	b0 e0       	ldi	r27, 0x00	; 0
+     846:	e7 e2       	ldi	r30, 0x27	; 39
+     848:	f0 e0       	ldi	r31, 0x00	; 0
+     84a:	80 81       	ld	r24, Z
+     84c:	82 60       	ori	r24, 0x02	; 2
+     84e:	8c 93       	st	X, r24
+     850:	a7 e2       	ldi	r26, 0x27	; 39
+     852:	b0 e0       	ldi	r27, 0x00	; 0
+     854:	e7 e2       	ldi	r30, 0x27	; 39
+     856:	f0 e0       	ldi	r31, 0x00	; 0
+     858:	80 81       	ld	r24, Z
+     85a:	81 60       	ori	r24, 0x01	; 1
+     85c:	8c 93       	st	X, r24
+     85e:	67 c1       	rjmp	.+718    	; 0xb2e <__stack+0x2cf>
+			break;
+
+			//  MUX4 | MUX3 | MUX2 | MUX1 | MUX0 		1 | 0 | 1 | 0 | 0		Channel: (ADC4 - ADC1)*1
+			case (CHANNEL_ADC4_ADC1_1):
+			SET_BIT(ADMUX, MUX4); CLR_BIT(ADMUX, MUX3); SET_BIT(ADMUX, MUX2); CLR_BIT(ADMUX, MUX1); CLR_BIT(ADMUX, MUX0);
+     860:	a7 e2       	ldi	r26, 0x27	; 39
+     862:	b0 e0       	ldi	r27, 0x00	; 0
+     864:	e7 e2       	ldi	r30, 0x27	; 39
+     866:	f0 e0       	ldi	r31, 0x00	; 0
+     868:	80 81       	ld	r24, Z
+     86a:	80 61       	ori	r24, 0x10	; 16
+     86c:	8c 93       	st	X, r24
+     86e:	a7 e2       	ldi	r26, 0x27	; 39
+     870:	b0 e0       	ldi	r27, 0x00	; 0
+     872:	e7 e2       	ldi	r30, 0x27	; 39
+     874:	f0 e0       	ldi	r31, 0x00	; 0
+     876:	80 81       	ld	r24, Z
+     878:	87 7f       	andi	r24, 0xF7	; 247
+     87a:	8c 93       	st	X, r24
+     87c:	a7 e2       	ldi	r26, 0x27	; 39
+     87e:	b0 e0       	ldi	r27, 0x00	; 0
+     880:	e7 e2       	ldi	r30, 0x27	; 39
+     882:	f0 e0       	ldi	r31, 0x00	; 0
+     884:	80 81       	ld	r24, Z
+     886:	84 60       	ori	r24, 0x04	; 4
+     888:	8c 93       	st	X, r24
+     88a:	a7 e2       	ldi	r26, 0x27	; 39
+     88c:	b0 e0       	ldi	r27, 0x00	; 0
+     88e:	e7 e2       	ldi	r30, 0x27	; 39
+     890:	f0 e0       	ldi	r31, 0x00	; 0
+     892:	80 81       	ld	r24, Z
+     894:	8d 7f       	andi	r24, 0xFD	; 253
+     896:	8c 93       	st	X, r24
+     898:	a7 e2       	ldi	r26, 0x27	; 39
+     89a:	b0 e0       	ldi	r27, 0x00	; 0
+     89c:	e7 e2       	ldi	r30, 0x27	; 39
+     89e:	f0 e0       	ldi	r31, 0x00	; 0
+     8a0:	80 81       	ld	r24, Z
+     8a2:	8e 7f       	andi	r24, 0xFE	; 254
+     8a4:	8c 93       	st	X, r24
+     8a6:	43 c1       	rjmp	.+646    	; 0xb2e <__stack+0x2cf>
+			break;
+
+			//  MUX4 | MUX3 | MUX2 | MUX1 | MUX0 		1 | 0 | 1 | 0 | 1		Channel: (ADC5 - ADC1)*1
+			case (CHANNEL_ADC5_ADC1_1):
+			SET_BIT(ADMUX, MUX4); CLR_BIT(ADMUX, MUX3); SET_BIT(ADMUX, MUX2); CLR_BIT(ADMUX, MUX1); SET_BIT(ADMUX, MUX0);
+     8a8:	a7 e2       	ldi	r26, 0x27	; 39
+     8aa:	b0 e0       	ldi	r27, 0x00	; 0
+     8ac:	e7 e2       	ldi	r30, 0x27	; 39
+     8ae:	f0 e0       	ldi	r31, 0x00	; 0
+     8b0:	80 81       	ld	r24, Z
+     8b2:	80 61       	ori	r24, 0x10	; 16
+     8b4:	8c 93       	st	X, r24
+     8b6:	a7 e2       	ldi	r26, 0x27	; 39
+     8b8:	b0 e0       	ldi	r27, 0x00	; 0
+     8ba:	e7 e2       	ldi	r30, 0x27	; 39
+     8bc:	f0 e0       	ldi	r31, 0x00	; 0
+     8be:	80 81       	ld	r24, Z
+     8c0:	87 7f       	andi	r24, 0xF7	; 247
+     8c2:	8c 93       	st	X, r24
+     8c4:	a7 e2       	ldi	r26, 0x27	; 39
+     8c6:	b0 e0       	ldi	r27, 0x00	; 0
+     8c8:	e7 e2       	ldi	r30, 0x27	; 39
+     8ca:	f0 e0       	ldi	r31, 0x00	; 0
+     8cc:	80 81       	ld	r24, Z
+     8ce:	84 60       	ori	r24, 0x04	; 4
+     8d0:	8c 93       	st	X, r24
+     8d2:	a7 e2       	ldi	r26, 0x27	; 39
+     8d4:	b0 e0       	ldi	r27, 0x00	; 0
+     8d6:	e7 e2       	ldi	r30, 0x27	; 39
+     8d8:	f0 e0       	ldi	r31, 0x00	; 0
+     8da:	80 81       	ld	r24, Z
+     8dc:	8d 7f       	andi	r24, 0xFD	; 253
+     8de:	8c 93       	st	X, r24
+     8e0:	a7 e2       	ldi	r26, 0x27	; 39
+     8e2:	b0 e0       	ldi	r27, 0x00	; 0
+     8e4:	e7 e2       	ldi	r30, 0x27	; 39
+     8e6:	f0 e0       	ldi	r31, 0x00	; 0
+     8e8:	80 81       	ld	r24, Z
+     8ea:	81 60       	ori	r24, 0x01	; 1
+     8ec:	8c 93       	st	X, r24
+     8ee:	1f c1       	rjmp	.+574    	; 0xb2e <__stack+0x2cf>
+			break;
+
+			//  MUX4 | MUX3 | MUX2 | MUX1 | MUX0 		1 | 0 | 1 | 1 | 0		Channel: (ADC6 - ADC1)*1
+			case (CHANNEL_ADC6_ADC1_1):
+			SET_BIT(ADMUX, MUX4); CLR_BIT(ADMUX, MUX3); SET_BIT(ADMUX, MUX2); SET_BIT(ADMUX, MUX1); CLR_BIT(ADMUX, MUX0);
+     8f0:	a7 e2       	ldi	r26, 0x27	; 39
+     8f2:	b0 e0       	ldi	r27, 0x00	; 0
+     8f4:	e7 e2       	ldi	r30, 0x27	; 39
+     8f6:	f0 e0       	ldi	r31, 0x00	; 0
+     8f8:	80 81       	ld	r24, Z
+     8fa:	80 61       	ori	r24, 0x10	; 16
+     8fc:	8c 93       	st	X, r24
+     8fe:	a7 e2       	ldi	r26, 0x27	; 39
+     900:	b0 e0       	ldi	r27, 0x00	; 0
+     902:	e7 e2       	ldi	r30, 0x27	; 39
+     904:	f0 e0       	ldi	r31, 0x00	; 0
+     906:	80 81       	ld	r24, Z
+     908:	87 7f       	andi	r24, 0xF7	; 247
+     90a:	8c 93       	st	X, r24
+     90c:	a7 e2       	ldi	r26, 0x27	; 39
+     90e:	b0 e0       	ldi	r27, 0x00	; 0
+     910:	e7 e2       	ldi	r30, 0x27	; 39
+     912:	f0 e0       	ldi	r31, 0x00	; 0
+     914:	80 81       	ld	r24, Z
+     916:	84 60       	ori	r24, 0x04	; 4
+     918:	8c 93       	st	X, r24
+     91a:	a7 e2       	ldi	r26, 0x27	; 39
+     91c:	b0 e0       	ldi	r27, 0x00	; 0
+     91e:	e7 e2       	ldi	r30, 0x27	; 39
+     920:	f0 e0       	ldi	r31, 0x00	; 0
+     922:	80 81       	ld	r24, Z
+     924:	82 60       	ori	r24, 0x02	; 2
+     926:	8c 93       	st	X, r24
+     928:	a7 e2       	ldi	r26, 0x27	; 39
+     92a:	b0 e0       	ldi	r27, 0x00	; 0
+     92c:	e7 e2       	ldi	r30, 0x27	; 39
+     92e:	f0 e0       	ldi	r31, 0x00	; 0
+     930:	80 81       	ld	r24, Z
+     932:	8e 7f       	andi	r24, 0xFE	; 254
+     934:	8c 93       	st	X, r24
+     936:	fb c0       	rjmp	.+502    	; 0xb2e <__stack+0x2cf>
+			break;
+
+			//  MUX4 | MUX3 | MUX2 | MUX1 | MUX0 		1 | 0 | 1 | 1 | 1		Channel: (ADC7 - ADC1)*1
+			case (CHANNEL_ADC7_ADC1_1):
+			SET_BIT(ADMUX, MUX4); CLR_BIT(ADMUX, MUX3); SET_BIT(ADMUX, MUX2); SET_BIT(ADMUX, MUX1); SET_BIT(ADMUX, MUX0);
+     938:	a7 e2       	ldi	r26, 0x27	; 39
+     93a:	b0 e0       	ldi	r27, 0x00	; 0
+     93c:	e7 e2       	ldi	r30, 0x27	; 39
+     93e:	f0 e0       	ldi	r31, 0x00	; 0
+     940:	80 81       	ld	r24, Z
+     942:	80 61       	ori	r24, 0x10	; 16
+     944:	8c 93       	st	X, r24
+     946:	a7 e2       	ldi	r26, 0x27	; 39
+     948:	b0 e0       	ldi	r27, 0x00	; 0
+     94a:	e7 e2       	ldi	r30, 0x27	; 39
+     94c:	f0 e0       	ldi	r31, 0x00	; 0
+     94e:	80 81       	ld	r24, Z
+     950:	87 7f       	andi	r24, 0xF7	; 247
+     952:	8c 93       	st	X, r24
+     954:	a7 e2       	ldi	r26, 0x27	; 39
+     956:	b0 e0       	ldi	r27, 0x00	; 0
+     958:	e7 e2       	ldi	r30, 0x27	; 39
+     95a:	f0 e0       	ldi	r31, 0x00	; 0
+     95c:	80 81       	ld	r24, Z
+     95e:	84 60       	ori	r24, 0x04	; 4
+     960:	8c 93       	st	X, r24
+     962:	a7 e2       	ldi	r26, 0x27	; 39
+     964:	b0 e0       	ldi	r27, 0x00	; 0
+     966:	e7 e2       	ldi	r30, 0x27	; 39
+     968:	f0 e0       	ldi	r31, 0x00	; 0
+     96a:	80 81       	ld	r24, Z
+     96c:	82 60       	ori	r24, 0x02	; 2
+     96e:	8c 93       	st	X, r24
+     970:	a7 e2       	ldi	r26, 0x27	; 39
+     972:	b0 e0       	ldi	r27, 0x00	; 0
+     974:	e7 e2       	ldi	r30, 0x27	; 39
+     976:	f0 e0       	ldi	r31, 0x00	; 0
+     978:	80 81       	ld	r24, Z
+     97a:	81 60       	ori	r24, 0x01	; 1
+     97c:	8c 93       	st	X, r24
+     97e:	d7 c0       	rjmp	.+430    	; 0xb2e <__stack+0x2cf>
+			break;
+
+			//  MUX4 | MUX3 | MUX2 | MUX1 | MUX0 		1 | 1 | 0 | 0 | 0		Channel: (ADC0 - ADC2)*1
+			case (CHANNEL_ADC0_ADC2_1):
+			SET_BIT(ADMUX, MUX4); SET_BIT(ADMUX, MUX3); CLR_BIT(ADMUX, MUX2); CLR_BIT(ADMUX, MUX1); CLR_BIT(ADMUX, MUX0);
+     980:	a7 e2       	ldi	r26, 0x27	; 39
+     982:	b0 e0       	ldi	r27, 0x00	; 0
+     984:	e7 e2       	ldi	r30, 0x27	; 39
+     986:	f0 e0       	ldi	r31, 0x00	; 0
+     988:	80 81       	ld	r24, Z
+     98a:	80 61       	ori	r24, 0x10	; 16
+     98c:	8c 93       	st	X, r24
+     98e:	a7 e2       	ldi	r26, 0x27	; 39
+     990:	b0 e0       	ldi	r27, 0x00	; 0
+     992:	e7 e2       	ldi	r30, 0x27	; 39
+     994:	f0 e0       	ldi	r31, 0x00	; 0
+     996:	80 81       	ld	r24, Z
+     998:	88 60       	ori	r24, 0x08	; 8
+     99a:	8c 93       	st	X, r24
+     99c:	a7 e2       	ldi	r26, 0x27	; 39
+     99e:	b0 e0       	ldi	r27, 0x00	; 0
+     9a0:	e7 e2       	ldi	r30, 0x27	; 39
+     9a2:	f0 e0       	ldi	r31, 0x00	; 0
+     9a4:	80 81       	ld	r24, Z
+     9a6:	8b 7f       	andi	r24, 0xFB	; 251
+     9a8:	8c 93       	st	X, r24
+     9aa:	a7 e2       	ldi	r26, 0x27	; 39
+     9ac:	b0 e0       	ldi	r27, 0x00	; 0
+     9ae:	e7 e2       	ldi	r30, 0x27	; 39
+     9b0:	f0 e0       	ldi	r31, 0x00	; 0
+     9b2:	80 81       	ld	r24, Z
+     9b4:	8d 7f       	andi	r24, 0xFD	; 253
+     9b6:	8c 93       	st	X, r24
+     9b8:	a7 e2       	ldi	r26, 0x27	; 39
+     9ba:	b0 e0       	ldi	r27, 0x00	; 0
+     9bc:	e7 e2       	ldi	r30, 0x27	; 39
+     9be:	f0 e0       	ldi	r31, 0x00	; 0
+     9c0:	80 81       	ld	r24, Z
+     9c2:	8e 7f       	andi	r24, 0xFE	; 254
+     9c4:	8c 93       	st	X, r24
+     9c6:	b3 c0       	rjmp	.+358    	; 0xb2e <__stack+0x2cf>
+			break;
+
+			//  MUX4 | MUX3 | MUX2 | MUX1 | MUX0 		1 | 1 | 0 | 0 | 1		Channel: (ADC1 - ADC2)*1
+			case (CHANNEL_ADC1_ADC2_1):
+			SET_BIT(ADMUX, MUX4); SET_BIT(ADMUX, MUX3); CLR_BIT(ADMUX, MUX2); CLR_BIT(ADMUX, MUX1); SET_BIT(ADMUX, MUX0);
+     9c8:	a7 e2       	ldi	r26, 0x27	; 39
+     9ca:	b0 e0       	ldi	r27, 0x00	; 0
+     9cc:	e7 e2       	ldi	r30, 0x27	; 39
+     9ce:	f0 e0       	ldi	r31, 0x00	; 0
+     9d0:	80 81       	ld	r24, Z
+     9d2:	80 61       	ori	r24, 0x10	; 16
+     9d4:	8c 93       	st	X, r24
+     9d6:	a7 e2       	ldi	r26, 0x27	; 39
+     9d8:	b0 e0       	ldi	r27, 0x00	; 0
+     9da:	e7 e2       	ldi	r30, 0x27	; 39
+     9dc:	f0 e0       	ldi	r31, 0x00	; 0
+     9de:	80 81       	ld	r24, Z
+     9e0:	88 60       	ori	r24, 0x08	; 8
+     9e2:	8c 93       	st	X, r24
+     9e4:	a7 e2       	ldi	r26, 0x27	; 39
+     9e6:	b0 e0       	ldi	r27, 0x00	; 0
+     9e8:	e7 e2       	ldi	r30, 0x27	; 39
+     9ea:	f0 e0       	ldi	r31, 0x00	; 0
+     9ec:	80 81       	ld	r24, Z
+     9ee:	8b 7f       	andi	r24, 0xFB	; 251
+     9f0:	8c 93       	st	X, r24
+     9f2:	a7 e2       	ldi	r26, 0x27	; 39
+     9f4:	b0 e0       	ldi	r27, 0x00	; 0
+     9f6:	e7 e2       	ldi	r30, 0x27	; 39
+     9f8:	f0 e0       	ldi	r31, 0x00	; 0
+     9fa:	80 81       	ld	r24, Z
+     9fc:	8d 7f       	andi	r24, 0xFD	; 253
+     9fe:	8c 93       	st	X, r24
+     a00:	a7 e2       	ldi	r26, 0x27	; 39
+     a02:	b0 e0       	ldi	r27, 0x00	; 0
+     a04:	e7 e2       	ldi	r30, 0x27	; 39
+     a06:	f0 e0       	ldi	r31, 0x00	; 0
+     a08:	80 81       	ld	r24, Z
+     a0a:	81 60       	ori	r24, 0x01	; 1
+     a0c:	8c 93       	st	X, r24
+     a0e:	8f c0       	rjmp	.+286    	; 0xb2e <__stack+0x2cf>
+			break;
+
+			//  MUX4 | MUX3 | MUX2 | MUX1 | MUX0 		1 | 1 | 0 | 1 | 0		Channel: (ADC2 - ADC2)*1
+			case (CHANNEL_ADC2_ADC2_1):
+			SET_BIT(ADMUX, MUX4); SET_BIT(ADMUX, MUX3); CLR_BIT(ADMUX, MUX2); SET_BIT(ADMUX, MUX1); CLR_BIT(ADMUX, MUX0);
+     a10:	a7 e2       	ldi	r26, 0x27	; 39
+     a12:	b0 e0       	ldi	r27, 0x00	; 0
+     a14:	e7 e2       	ldi	r30, 0x27	; 39
+     a16:	f0 e0       	ldi	r31, 0x00	; 0
+     a18:	80 81       	ld	r24, Z
+     a1a:	80 61       	ori	r24, 0x10	; 16
+     a1c:	8c 93       	st	X, r24
+     a1e:	a7 e2       	ldi	r26, 0x27	; 39
+     a20:	b0 e0       	ldi	r27, 0x00	; 0
+     a22:	e7 e2       	ldi	r30, 0x27	; 39
+     a24:	f0 e0       	ldi	r31, 0x00	; 0
+     a26:	80 81       	ld	r24, Z
+     a28:	88 60       	ori	r24, 0x08	; 8
+     a2a:	8c 93       	st	X, r24
+     a2c:	a7 e2       	ldi	r26, 0x27	; 39
+     a2e:	b0 e0       	ldi	r27, 0x00	; 0
+     a30:	e7 e2       	ldi	r30, 0x27	; 39
+     a32:	f0 e0       	ldi	r31, 0x00	; 0
+     a34:	80 81       	ld	r24, Z
+     a36:	8b 7f       	andi	r24, 0xFB	; 251
+     a38:	8c 93       	st	X, r24
+     a3a:	a7 e2       	ldi	r26, 0x27	; 39
+     a3c:	b0 e0       	ldi	r27, 0x00	; 0
+     a3e:	e7 e2       	ldi	r30, 0x27	; 39
+     a40:	f0 e0       	ldi	r31, 0x00	; 0
+     a42:	80 81       	ld	r24, Z
+     a44:	82 60       	ori	r24, 0x02	; 2
+     a46:	8c 93       	st	X, r24
+     a48:	a7 e2       	ldi	r26, 0x27	; 39
+     a4a:	b0 e0       	ldi	r27, 0x00	; 0
+     a4c:	e7 e2       	ldi	r30, 0x27	; 39
+     a4e:	f0 e0       	ldi	r31, 0x00	; 0
+     a50:	80 81       	ld	r24, Z
+     a52:	8e 7f       	andi	r24, 0xFE	; 254
+     a54:	8c 93       	st	X, r24
+     a56:	6b c0       	rjmp	.+214    	; 0xb2e <__stack+0x2cf>
+			break;
+
+			//  MUX4 | MUX3 | MUX2 | MUX1 | MUX0 		1 | 1 | 0 | 1 | 1		Channel: (ADC3 - ADC2)*1
+			case (CHANNEL_ADC3_ADC2_1):
+			SET_BIT(ADMUX, MUX4); SET_BIT(ADMUX, MUX3); CLR_BIT(ADMUX, MUX2); SET_BIT(ADMUX, MUX1); SET_BIT(ADMUX, MUX0);
+     a58:	a7 e2       	ldi	r26, 0x27	; 39
+     a5a:	b0 e0       	ldi	r27, 0x00	; 0
+     a5c:	e7 e2       	ldi	r30, 0x27	; 39
+     a5e:	f0 e0       	ldi	r31, 0x00	; 0
+     a60:	80 81       	ld	r24, Z
+     a62:	80 61       	ori	r24, 0x10	; 16
+     a64:	8c 93       	st	X, r24
+     a66:	a7 e2       	ldi	r26, 0x27	; 39
+     a68:	b0 e0       	ldi	r27, 0x00	; 0
+     a6a:	e7 e2       	ldi	r30, 0x27	; 39
+     a6c:	f0 e0       	ldi	r31, 0x00	; 0
+     a6e:	80 81       	ld	r24, Z
+     a70:	88 60       	ori	r24, 0x08	; 8
+     a72:	8c 93       	st	X, r24
+     a74:	a7 e2       	ldi	r26, 0x27	; 39
+     a76:	b0 e0       	ldi	r27, 0x00	; 0
+     a78:	e7 e2       	ldi	r30, 0x27	; 39
+     a7a:	f0 e0       	ldi	r31, 0x00	; 0
+     a7c:	80 81       	ld	r24, Z
+     a7e:	8b 7f       	andi	r24, 0xFB	; 251
+     a80:	8c 93       	st	X, r24
+     a82:	a7 e2       	ldi	r26, 0x27	; 39
+     a84:	b0 e0       	ldi	r27, 0x00	; 0
+     a86:	e7 e2       	ldi	r30, 0x27	; 39
+     a88:	f0 e0       	ldi	r31, 0x00	; 0
+     a8a:	80 81       	ld	r24, Z
+     a8c:	82 60       	ori	r24, 0x02	; 2
+     a8e:	8c 93       	st	X, r24
+     a90:	a7 e2       	ldi	r26, 0x27	; 39
+     a92:	b0 e0       	ldi	r27, 0x00	; 0
+     a94:	e7 e2       	ldi	r30, 0x27	; 39
+     a96:	f0 e0       	ldi	r31, 0x00	; 0
+     a98:	80 81       	ld	r24, Z
+     a9a:	81 60       	ori	r24, 0x01	; 1
+     a9c:	8c 93       	st	X, r24
+     a9e:	47 c0       	rjmp	.+142    	; 0xb2e <__stack+0x2cf>
+			break;
+
+			//  MUX4 | MUX3 | MUX2 | MUX1 | MUX0 		1 | 1 | 1 | 0 | 0		Channel: (ADC4 - ADC2)*1
+			case (CHANNEL_ADC4_ADC2_1):
+			SET_BIT(ADMUX, MUX4); SET_BIT(ADMUX, MUX3); SET_BIT(ADMUX, MUX2); CLR_BIT(ADMUX, MUX1); CLR_BIT(ADMUX, MUX0);
+     aa0:	a7 e2       	ldi	r26, 0x27	; 39
+     aa2:	b0 e0       	ldi	r27, 0x00	; 0
+     aa4:	e7 e2       	ldi	r30, 0x27	; 39
+     aa6:	f0 e0       	ldi	r31, 0x00	; 0
+     aa8:	80 81       	ld	r24, Z
+     aaa:	80 61       	ori	r24, 0x10	; 16
+     aac:	8c 93       	st	X, r24
+     aae:	a7 e2       	ldi	r26, 0x27	; 39
+     ab0:	b0 e0       	ldi	r27, 0x00	; 0
+     ab2:	e7 e2       	ldi	r30, 0x27	; 39
+     ab4:	f0 e0       	ldi	r31, 0x00	; 0
+     ab6:	80 81       	ld	r24, Z
+     ab8:	88 60       	ori	r24, 0x08	; 8
+     aba:	8c 93       	st	X, r24
+     abc:	a7 e2       	ldi	r26, 0x27	; 39
+     abe:	b0 e0       	ldi	r27, 0x00	; 0
+     ac0:	e7 e2       	ldi	r30, 0x27	; 39
+     ac2:	f0 e0       	ldi	r31, 0x00	; 0
+     ac4:	80 81       	ld	r24, Z
+     ac6:	84 60       	ori	r24, 0x04	; 4
+     ac8:	8c 93       	st	X, r24
+     aca:	a7 e2       	ldi	r26, 0x27	; 39
+     acc:	b0 e0       	ldi	r27, 0x00	; 0
+     ace:	e7 e2       	ldi	r30, 0x27	; 39
+     ad0:	f0 e0       	ldi	r31, 0x00	; 0
+     ad2:	80 81       	ld	r24, Z
+     ad4:	8d 7f       	andi	r24, 0xFD	; 253
+     ad6:	8c 93       	st	X, r24
+     ad8:	a7 e2       	ldi	r26, 0x27	; 39
+     ada:	b0 e0       	ldi	r27, 0x00	; 0
+     adc:	e7 e2       	ldi	r30, 0x27	; 39
+     ade:	f0 e0       	ldi	r31, 0x00	; 0
+     ae0:	80 81       	ld	r24, Z
+     ae2:	8e 7f       	andi	r24, 0xFE	; 254
+     ae4:	8c 93       	st	X, r24
+     ae6:	23 c0       	rjmp	.+70     	; 0xb2e <__stack+0x2cf>
+			break;
+
+			//  MUX4 | MUX3 | MUX2 | MUX1 | MUX0 		1 | 1 | 1 | 0 | 1		Channel: (ADC5 - ADC2)*1
+			case (CHANNEL_ADC5_ADC2_1):
+			SET_BIT(ADMUX, MUX4); SET_BIT(ADMUX, MUX3); SET_BIT(ADMUX, MUX2); CLR_BIT(ADMUX, MUX1); SET_BIT(ADMUX, MUX0);
+     ae8:	a7 e2       	ldi	r26, 0x27	; 39
+     aea:	b0 e0       	ldi	r27, 0x00	; 0
+     aec:	e7 e2       	ldi	r30, 0x27	; 39
+     aee:	f0 e0       	ldi	r31, 0x00	; 0
+     af0:	80 81       	ld	r24, Z
+     af2:	80 61       	ori	r24, 0x10	; 16
+     af4:	8c 93       	st	X, r24
+     af6:	a7 e2       	ldi	r26, 0x27	; 39
+     af8:	b0 e0       	ldi	r27, 0x00	; 0
+     afa:	e7 e2       	ldi	r30, 0x27	; 39
+     afc:	f0 e0       	ldi	r31, 0x00	; 0
+     afe:	80 81       	ld	r24, Z
+     b00:	88 60       	ori	r24, 0x08	; 8
+     b02:	8c 93       	st	X, r24
+     b04:	a7 e2       	ldi	r26, 0x27	; 39
+     b06:	b0 e0       	ldi	r27, 0x00	; 0
+     b08:	e7 e2       	ldi	r30, 0x27	; 39
+     b0a:	f0 e0       	ldi	r31, 0x00	; 0
+     b0c:	80 81       	ld	r24, Z
+     b0e:	84 60       	ori	r24, 0x04	; 4
+     b10:	8c 93       	st	X, r24
+     b12:	a7 e2       	ldi	r26, 0x27	; 39
+     b14:	b0 e0       	ldi	r27, 0x00	; 0
+     b16:	e7 e2       	ldi	r30, 0x27	; 39
+     b18:	f0 e0       	ldi	r31, 0x00	; 0
+     b1a:	80 81       	ld	r24, Z
+     b1c:	8d 7f       	andi	r24, 0xFD	; 253
+     b1e:	8c 93       	st	X, r24
+     b20:	a7 e2       	ldi	r26, 0x27	; 39
+     b22:	b0 e0       	ldi	r27, 0x00	; 0
+     b24:	e7 e2       	ldi	r30, 0x27	; 39
+     b26:	f0 e0       	ldi	r31, 0x00	; 0
+     b28:	80 81       	ld	r24, Z
+     b2a:	81 60       	ori	r24, 0x01	; 1
+     b2c:	8c 93       	st	X, r24
+		}
+
+
+
+// Switching on PRESCALER (2, 4, 8, 16, 32, 64, 128)
+	switch(Config.Prescaler)
+     b2e:	8c 81       	ldd	r24, Y+4	; 0x04
+     b30:	28 2f       	mov	r18, r24
+     b32:	30 e0       	ldi	r19, 0x00	; 0
+     b34:	3e 83       	std	Y+6, r19	; 0x06
+     b36:	2d 83       	std	Y+5, r18	; 0x05
+     b38:	8d 81       	ldd	r24, Y+5	; 0x05
+     b3a:	9e 81       	ldd	r25, Y+6	; 0x06
+     b3c:	83 30       	cpi	r24, 0x03	; 3
+     b3e:	91 05       	cpc	r25, r1
+     b40:	09 f4       	brne	.+2      	; 0xb44 <__stack+0x2e5>
+     b42:	6a c0       	rjmp	.+212    	; 0xc18 <__stack+0x3b9>
+     b44:	2d 81       	ldd	r18, Y+5	; 0x05
+     b46:	3e 81       	ldd	r19, Y+6	; 0x06
+     b48:	24 30       	cpi	r18, 0x04	; 4
+     b4a:	31 05       	cpc	r19, r1
+     b4c:	84 f4       	brge	.+32     	; 0xb6e <__stack+0x30f>
+     b4e:	8d 81       	ldd	r24, Y+5	; 0x05
+     b50:	9e 81       	ldd	r25, Y+6	; 0x06
+     b52:	81 30       	cpi	r24, 0x01	; 1
+     b54:	91 05       	cpc	r25, r1
+     b56:	a1 f1       	breq	.+104    	; 0xbc0 <__stack+0x361>
+     b58:	2d 81       	ldd	r18, Y+5	; 0x05
+     b5a:	3e 81       	ldd	r19, Y+6	; 0x06
+     b5c:	22 30       	cpi	r18, 0x02	; 2
+     b5e:	31 05       	cpc	r19, r1
+     b60:	0c f0       	brlt	.+2      	; 0xb64 <__stack+0x305>
+     b62:	44 c0       	rjmp	.+136    	; 0xbec <__stack+0x38d>
+     b64:	8d 81       	ldd	r24, Y+5	; 0x05
+     b66:	9e 81       	ldd	r25, Y+6	; 0x06
+     b68:	00 97       	sbiw	r24, 0x00	; 0
+     b6a:	a1 f0       	breq	.+40     	; 0xb94 <__stack+0x335>
+     b6c:	ac c0       	rjmp	.+344    	; 0xcc6 <__stack+0x467>
+     b6e:	2d 81       	ldd	r18, Y+5	; 0x05
+     b70:	3e 81       	ldd	r19, Y+6	; 0x06
+     b72:	25 30       	cpi	r18, 0x05	; 5
+     b74:	31 05       	cpc	r19, r1
+     b76:	09 f4       	brne	.+2      	; 0xb7a <__stack+0x31b>
+     b78:	7b c0       	rjmp	.+246    	; 0xc70 <__stack+0x411>
+     b7a:	8d 81       	ldd	r24, Y+5	; 0x05
+     b7c:	9e 81       	ldd	r25, Y+6	; 0x06
+     b7e:	85 30       	cpi	r24, 0x05	; 5
+     b80:	91 05       	cpc	r25, r1
+     b82:	0c f4       	brge	.+2      	; 0xb86 <__stack+0x327>
+     b84:	5f c0       	rjmp	.+190    	; 0xc44 <__stack+0x3e5>
+     b86:	2d 81       	ldd	r18, Y+5	; 0x05
+     b88:	3e 81       	ldd	r19, Y+6	; 0x06
+     b8a:	26 30       	cpi	r18, 0x06	; 6
+     b8c:	31 05       	cpc	r19, r1
+     b8e:	09 f4       	brne	.+2      	; 0xb92 <__stack+0x333>
+     b90:	85 c0       	rjmp	.+266    	; 0xc9c <__stack+0x43d>
+     b92:	99 c0       	rjmp	.+306    	; 0xcc6 <__stack+0x467>
+	{
+		// ADPS2 | ADPS1 | ADPS0		0 | 0 | 0				Prescaler  = 2
+		case (PRESCALER_2):
+		CLR_BIT(ADCSRA, ADPS2); CLR_BIT(ADCSRA, ADPS1); CLR_BIT(ADCSRA, ADPS0);
+     b94:	a6 e2       	ldi	r26, 0x26	; 38
+     b96:	b0 e0       	ldi	r27, 0x00	; 0
+     b98:	e6 e2       	ldi	r30, 0x26	; 38
+     b9a:	f0 e0       	ldi	r31, 0x00	; 0
+     b9c:	80 81       	ld	r24, Z
+     b9e:	8b 7f       	andi	r24, 0xFB	; 251
+     ba0:	8c 93       	st	X, r24
+     ba2:	a6 e2       	ldi	r26, 0x26	; 38
+     ba4:	b0 e0       	ldi	r27, 0x00	; 0
+     ba6:	e6 e2       	ldi	r30, 0x26	; 38
+     ba8:	f0 e0       	ldi	r31, 0x00	; 0
+     baa:	80 81       	ld	r24, Z
+     bac:	8d 7f       	andi	r24, 0xFD	; 253
+     bae:	8c 93       	st	X, r24
+     bb0:	a6 e2       	ldi	r26, 0x26	; 38
+     bb2:	b0 e0       	ldi	r27, 0x00	; 0
+     bb4:	e6 e2       	ldi	r30, 0x26	; 38
+     bb6:	f0 e0       	ldi	r31, 0x00	; 0
+     bb8:	80 81       	ld	r24, Z
+     bba:	8e 7f       	andi	r24, 0xFE	; 254
+     bbc:	8c 93       	st	X, r24
+     bbe:	83 c0       	rjmp	.+262    	; 0xcc6 <__stack+0x467>
+		break;
+
+		// ADPS2 | ADPS1 | ADPS0		0 | 1 | 0				Prescaler  = 4
+		case (PRESCALER_4):
+		CLR_BIT(ADCSRA, ADPS2); SET_BIT(ADCSRA, ADPS1); CLR_BIT(ADCSRA, ADPS0);
+     bc0:	a6 e2       	ldi	r26, 0x26	; 38
+     bc2:	b0 e0       	ldi	r27, 0x00	; 0
+     bc4:	e6 e2       	ldi	r30, 0x26	; 38
+     bc6:	f0 e0       	ldi	r31, 0x00	; 0
+     bc8:	80 81       	ld	r24, Z
+     bca:	8b 7f       	andi	r24, 0xFB	; 251
+     bcc:	8c 93       	st	X, r24
+     bce:	a6 e2       	ldi	r26, 0x26	; 38
+     bd0:	b0 e0       	ldi	r27, 0x00	; 0
+     bd2:	e6 e2       	ldi	r30, 0x26	; 38
+     bd4:	f0 e0       	ldi	r31, 0x00	; 0
+     bd6:	80 81       	ld	r24, Z
+     bd8:	82 60       	ori	r24, 0x02	; 2
+     bda:	8c 93       	st	X, r24
+     bdc:	a6 e2       	ldi	r26, 0x26	; 38
+     bde:	b0 e0       	ldi	r27, 0x00	; 0
+     be0:	e6 e2       	ldi	r30, 0x26	; 38
+     be2:	f0 e0       	ldi	r31, 0x00	; 0
+     be4:	80 81       	ld	r24, Z
+     be6:	8e 7f       	andi	r24, 0xFE	; 254
+     be8:	8c 93       	st	X, r24
+     bea:	6d c0       	rjmp	.+218    	; 0xcc6 <__stack+0x467>
+		break;
+
+		// ADPS2 | ADPS1 | ADPS0		0 | 1 | 1				Prescaler  = 8
+		case (PRESCALER_8):
+		CLR_BIT(ADCSRA, ADPS2); SET_BIT(ADCSRA, ADPS1); SET_BIT(ADCSRA, ADPS0);
+     bec:	a6 e2       	ldi	r26, 0x26	; 38
+     bee:	b0 e0       	ldi	r27, 0x00	; 0
+     bf0:	e6 e2       	ldi	r30, 0x26	; 38
+     bf2:	f0 e0       	ldi	r31, 0x00	; 0
+     bf4:	80 81       	ld	r24, Z
+     bf6:	8b 7f       	andi	r24, 0xFB	; 251
+     bf8:	8c 93       	st	X, r24
+     bfa:	a6 e2       	ldi	r26, 0x26	; 38
+     bfc:	b0 e0       	ldi	r27, 0x00	; 0
+     bfe:	e6 e2       	ldi	r30, 0x26	; 38
+     c00:	f0 e0       	ldi	r31, 0x00	; 0
+     c02:	80 81       	ld	r24, Z
+     c04:	82 60       	ori	r24, 0x02	; 2
+     c06:	8c 93       	st	X, r24
+     c08:	a6 e2       	ldi	r26, 0x26	; 38
+     c0a:	b0 e0       	ldi	r27, 0x00	; 0
+     c0c:	e6 e2       	ldi	r30, 0x26	; 38
+     c0e:	f0 e0       	ldi	r31, 0x00	; 0
+     c10:	80 81       	ld	r24, Z
+     c12:	81 60       	ori	r24, 0x01	; 1
+     c14:	8c 93       	st	X, r24
+     c16:	57 c0       	rjmp	.+174    	; 0xcc6 <__stack+0x467>
+		break;
+
+		// ADPS2 | ADPS1 | ADPS0		1 | 0 | 0				Prescaler  = 16
+		case (PRESCALER_16): //
+		SET_BIT(ADCSRA, ADPS2); CLR_BIT(ADCSRA, ADPS1); CLR_BIT(ADCSRA, ADPS0);
+     c18:	a6 e2       	ldi	r26, 0x26	; 38
+     c1a:	b0 e0       	ldi	r27, 0x00	; 0
+     c1c:	e6 e2       	ldi	r30, 0x26	; 38
+     c1e:	f0 e0       	ldi	r31, 0x00	; 0
+     c20:	80 81       	ld	r24, Z
+     c22:	84 60       	ori	r24, 0x04	; 4
+     c24:	8c 93       	st	X, r24
+     c26:	a6 e2       	ldi	r26, 0x26	; 38
+     c28:	b0 e0       	ldi	r27, 0x00	; 0
+     c2a:	e6 e2       	ldi	r30, 0x26	; 38
+     c2c:	f0 e0       	ldi	r31, 0x00	; 0
+     c2e:	80 81       	ld	r24, Z
+     c30:	8d 7f       	andi	r24, 0xFD	; 253
+     c32:	8c 93       	st	X, r24
+     c34:	a6 e2       	ldi	r26, 0x26	; 38
+     c36:	b0 e0       	ldi	r27, 0x00	; 0
+     c38:	e6 e2       	ldi	r30, 0x26	; 38
+     c3a:	f0 e0       	ldi	r31, 0x00	; 0
+     c3c:	80 81       	ld	r24, Z
+     c3e:	8e 7f       	andi	r24, 0xFE	; 254
+     c40:	8c 93       	st	X, r24
+     c42:	41 c0       	rjmp	.+130    	; 0xcc6 <__stack+0x467>
+		break;
+
+		// ADPS2 | ADPS1 | ADPS0		1 | 0 | 1				Prescaler  = 32
+		case (PRESCALER_32): //
+		SET_BIT(ADCSRA, ADPS2); CLR_BIT(ADCSRA, ADPS1); SET_BIT(ADCSRA, ADPS0);
+     c44:	a6 e2       	ldi	r26, 0x26	; 38
+     c46:	b0 e0       	ldi	r27, 0x00	; 0
+     c48:	e6 e2       	ldi	r30, 0x26	; 38
+     c4a:	f0 e0       	ldi	r31, 0x00	; 0
+     c4c:	80 81       	ld	r24, Z
+     c4e:	84 60       	ori	r24, 0x04	; 4
+     c50:	8c 93       	st	X, r24
+     c52:	a6 e2       	ldi	r26, 0x26	; 38
+     c54:	b0 e0       	ldi	r27, 0x00	; 0
+     c56:	e6 e2       	ldi	r30, 0x26	; 38
+     c58:	f0 e0       	ldi	r31, 0x00	; 0
+     c5a:	80 81       	ld	r24, Z
+     c5c:	8d 7f       	andi	r24, 0xFD	; 253
+     c5e:	8c 93       	st	X, r24
+     c60:	a6 e2       	ldi	r26, 0x26	; 38
+     c62:	b0 e0       	ldi	r27, 0x00	; 0
+     c64:	e6 e2       	ldi	r30, 0x26	; 38
+     c66:	f0 e0       	ldi	r31, 0x00	; 0
+     c68:	80 81       	ld	r24, Z
+     c6a:	81 60       	ori	r24, 0x01	; 1
+     c6c:	8c 93       	st	X, r24
+     c6e:	2b c0       	rjmp	.+86     	; 0xcc6 <__stack+0x467>
+		break;
+
+		// ADPS2 | ADPS1 | ADPS0		1 | 1 | 0				Prescaler  = 64
+		case (PRESCALER_64):
+		SET_BIT(ADCSRA, ADPS2); SET_BIT(ADCSRA, ADPS1); CLR_BIT(ADCSRA, ADPS0);
+     c70:	a6 e2       	ldi	r26, 0x26	; 38
+     c72:	b0 e0       	ldi	r27, 0x00	; 0
+     c74:	e6 e2       	ldi	r30, 0x26	; 38
+     c76:	f0 e0       	ldi	r31, 0x00	; 0
+     c78:	80 81       	ld	r24, Z
+     c7a:	84 60       	ori	r24, 0x04	; 4
+     c7c:	8c 93       	st	X, r24
+     c7e:	a6 e2       	ldi	r26, 0x26	; 38
+     c80:	b0 e0       	ldi	r27, 0x00	; 0
+     c82:	e6 e2       	ldi	r30, 0x26	; 38
+     c84:	f0 e0       	ldi	r31, 0x00	; 0
+     c86:	80 81       	ld	r24, Z
+     c88:	82 60       	ori	r24, 0x02	; 2
+     c8a:	8c 93       	st	X, r24
+     c8c:	a6 e2       	ldi	r26, 0x26	; 38
+     c8e:	b0 e0       	ldi	r27, 0x00	; 0
+     c90:	e6 e2       	ldi	r30, 0x26	; 38
+     c92:	f0 e0       	ldi	r31, 0x00	; 0
+     c94:	80 81       	ld	r24, Z
+     c96:	8e 7f       	andi	r24, 0xFE	; 254
+     c98:	8c 93       	st	X, r24
+     c9a:	15 c0       	rjmp	.+42     	; 0xcc6 <__stack+0x467>
+		break;
+
+		// ADPS2 | ADPS1 | ADPS0		1 | 1 | 1				Prescaler  = 128
+		case (PRESCALER_128):
+		SET_BIT(ADCSRA, ADPS2); SET_BIT(ADCSRA, ADPS1); SET_BIT(ADCSRA, ADPS0);
+     c9c:	a6 e2       	ldi	r26, 0x26	; 38
+     c9e:	b0 e0       	ldi	r27, 0x00	; 0
+     ca0:	e6 e2       	ldi	r30, 0x26	; 38
+     ca2:	f0 e0       	ldi	r31, 0x00	; 0
+     ca4:	80 81       	ld	r24, Z
+     ca6:	84 60       	ori	r24, 0x04	; 4
+     ca8:	8c 93       	st	X, r24
+     caa:	a6 e2       	ldi	r26, 0x26	; 38
+     cac:	b0 e0       	ldi	r27, 0x00	; 0
+     cae:	e6 e2       	ldi	r30, 0x26	; 38
+     cb0:	f0 e0       	ldi	r31, 0x00	; 0
+     cb2:	80 81       	ld	r24, Z
+     cb4:	82 60       	ori	r24, 0x02	; 2
+     cb6:	8c 93       	st	X, r24
+     cb8:	a6 e2       	ldi	r26, 0x26	; 38
+     cba:	b0 e0       	ldi	r27, 0x00	; 0
+     cbc:	e6 e2       	ldi	r30, 0x26	; 38
+     cbe:	f0 e0       	ldi	r31, 0x00	; 0
+     cc0:	80 81       	ld	r24, Z
+     cc2:	81 60       	ori	r24, 0x01	; 1
+     cc4:	8c 93       	st	X, r24
+		break;
+	}
+
+// Enabling ADC to start, give power only not starting conversion
+	SET_BIT(ADCSRA, ADEN);
+     cc6:	a6 e2       	ldi	r26, 0x26	; 38
+     cc8:	b0 e0       	ldi	r27, 0x00	; 0
+     cca:	e6 e2       	ldi	r30, 0x26	; 38
+     ccc:	f0 e0       	ldi	r31, 0x00	; 0
+     cce:	80 81       	ld	r24, Z
+     cd0:	80 68       	ori	r24, 0x80	; 128
+     cd2:	8c 93       	st	X, r24
+}
+     cd4:	2c 96       	adiw	r28, 0x0c	; 12
+     cd6:	0f b6       	in	r0, 0x3f	; 63
+     cd8:	f8 94       	cli
+     cda:	de bf       	out	0x3e, r29	; 62
+     cdc:	0f be       	out	0x3f, r0	; 63
+     cde:	cd bf       	out	0x3d, r28	; 61
+     ce0:	cf 91       	pop	r28
+     ce2:	df 91       	pop	r29
+     ce4:	08 95       	ret
+
+00000ce6 <ADC_GetData>:
+
+
+// Want to return all the resolution of 10 bits, so need u16
+u16 ADC_GetData(void) // This Function is used to get the data from the ADC data registers (ADCH(8-bit), ADCL(8-bit) == 16-bit) after the ADC conversion process completes
+{
+     ce6:	df 93       	push	r29
+     ce8:	cf 93       	push	r28
+     cea:	00 d0       	rcall	.+0      	; 0xcec <ADC_GetData+0x6>
+     cec:	cd b7       	in	r28, 0x3d	; 61
+     cee:	de b7       	in	r29, 0x3e	; 62
+	SET_BIT(ADCSRA, ADSC); // Start Conversion
+     cf0:	a6 e2       	ldi	r26, 0x26	; 38
+     cf2:	b0 e0       	ldi	r27, 0x00	; 0
+     cf4:	e6 e2       	ldi	r30, 0x26	; 38
+     cf6:	f0 e0       	ldi	r31, 0x00	; 0
+     cf8:	80 81       	ld	r24, Z
+     cfa:	80 64       	ori	r24, 0x40	; 64
+     cfc:	8c 93       	st	X, r24
+
+	while(ADCIF == 0); // wait here as the ADC interrupt flag is not 1. If 1, it ADC finished conversion
+     cfe:	e6 e2       	ldi	r30, 0x26	; 38
+     d00:	f0 e0       	ldi	r31, 0x00	; 0
+     d02:	80 81       	ld	r24, Z
+     d04:	82 95       	swap	r24
+     d06:	8f 70       	andi	r24, 0x0F	; 15
+     d08:	88 2f       	mov	r24, r24
+     d0a:	90 e0       	ldi	r25, 0x00	; 0
+     d0c:	81 70       	andi	r24, 0x01	; 1
+     d0e:	90 70       	andi	r25, 0x00	; 0
+     d10:	00 97       	sbiw	r24, 0x00	; 0
+     d12:	a9 f3       	breq	.-22     	; 0xcfe <ADC_GetData+0x18>
+
+	u16 data = 0; // used to store the data got from ADC after Conversion
+     d14:	1a 82       	std	Y+2, r1	; 0x02
+     d16:	19 82       	std	Y+1, r1	; 0x01
+	data = ADCL; // 0000 0000 [ADCL (2) 00 0000]
+     d18:	e4 e2       	ldi	r30, 0x24	; 36
+     d1a:	f0 e0       	ldi	r31, 0x00	; 0
+     d1c:	80 81       	ld	r24, Z
+     d1e:	88 2f       	mov	r24, r24
+     d20:	90 e0       	ldi	r25, 0x00	; 0
+     d22:	9a 83       	std	Y+2, r25	; 0x02
+     d24:	89 83       	std	Y+1, r24	; 0x01
+	data = data | (ADCH << 8); // [ADCH (8)] | [ADCL (2) 00 0000]
+     d26:	e5 e2       	ldi	r30, 0x25	; 37
+     d28:	f0 e0       	ldi	r31, 0x00	; 0
+     d2a:	80 81       	ld	r24, Z
+     d2c:	88 2f       	mov	r24, r24
+     d2e:	90 e0       	ldi	r25, 0x00	; 0
+     d30:	98 2f       	mov	r25, r24
+     d32:	88 27       	eor	r24, r24
+     d34:	9c 01       	movw	r18, r24
+     d36:	89 81       	ldd	r24, Y+1	; 0x01
+     d38:	9a 81       	ldd	r25, Y+2	; 0x02
+     d3a:	82 2b       	or	r24, r18
+     d3c:	93 2b       	or	r25, r19
+     d3e:	9a 83       	std	Y+2, r25	; 0x02
+     d40:	89 83       	std	Y+1, r24	; 0x01
+
+	SET_BIT(ADCSRA, ADIF); // Clear Interrupt Flag by writing 1
+     d42:	a6 e2       	ldi	r26, 0x26	; 38
+     d44:	b0 e0       	ldi	r27, 0x00	; 0
+     d46:	e6 e2       	ldi	r30, 0x26	; 38
+     d48:	f0 e0       	ldi	r31, 0x00	; 0
+     d4a:	80 81       	ld	r24, Z
+     d4c:	80 61       	ori	r24, 0x10	; 16
+     d4e:	8c 93       	st	X, r24
+
+	return data; // return the data after conversion
+     d50:	89 81       	ldd	r24, Y+1	; 0x01
+     d52:	9a 81       	ldd	r25, Y+2	; 0x02
+}
+     d54:	0f 90       	pop	r0
+     d56:	0f 90       	pop	r0
+     d58:	cf 91       	pop	r28
+     d5a:	df 91       	pop	r29
+     d5c:	08 95       	ret
+
+00000d5e <SetPinDirection>:
+*/
+#include"DDIO.h" // This header file includes the appropriate IO definitions for the device that has been specified by the -MCU= compiler command-line switch.
+
+// Function (1):  to set the pin number (0 to 31) direction as Input(floating)/Output/Input(pull up)
+void SetPinDirection(u8 PinNumber, u8 PinDirection)
+{
+     d5e:	df 93       	push	r29
+     d60:	cf 93       	push	r28
+     d62:	00 d0       	rcall	.+0      	; 0xd64 <SetPinDirection+0x6>
+     d64:	0f 92       	push	r0
+     d66:	cd b7       	in	r28, 0x3d	; 61
+     d68:	de b7       	in	r29, 0x3e	; 62
+     d6a:	8a 83       	std	Y+2, r24	; 0x02
+     d6c:	6b 83       	std	Y+3, r22	; 0x03
+	u8 PortLetter = PinNumber/NUM; // to get the Port letter (0 for A, 1 for B, 2 for C, 3 for D)
+     d6e:	8a 81       	ldd	r24, Y+2	; 0x02
+     d70:	86 95       	lsr	r24
+     d72:	86 95       	lsr	r24
+     d74:	86 95       	lsr	r24
+     d76:	89 83       	std	Y+1, r24	; 0x01
+	// PinNumber%NUM gives the number of the pin in the port from 0 to 7
+
+	// 0 for port A
+		if (PortLetter == PortA_Letter)
+     d78:	89 81       	ldd	r24, Y+1	; 0x01
+     d7a:	88 23       	and	r24, r24
+     d7c:	09 f0       	breq	.+2      	; 0xd80 <SetPinDirection+0x22>
+     d7e:	66 c0       	rjmp	.+204    	; 0xe4c <SetPinDirection+0xee>
+		{
+			//DDRA
+			if (PinDirection == INPUT) // Input (floating)
+     d80:	8b 81       	ldd	r24, Y+3	; 0x03
+     d82:	88 23       	and	r24, r24
+     d84:	c1 f4       	brne	.+48     	; 0xdb6 <SetPinDirection+0x58>
+			{
+				CLR_BIT(DDRA, PinNumber%NUM);
+     d86:	aa e3       	ldi	r26, 0x3A	; 58
+     d88:	b0 e0       	ldi	r27, 0x00	; 0
+     d8a:	ea e3       	ldi	r30, 0x3A	; 58
+     d8c:	f0 e0       	ldi	r31, 0x00	; 0
+     d8e:	80 81       	ld	r24, Z
+     d90:	48 2f       	mov	r20, r24
+     d92:	8a 81       	ldd	r24, Y+2	; 0x02
+     d94:	88 2f       	mov	r24, r24
+     d96:	90 e0       	ldi	r25, 0x00	; 0
+     d98:	9c 01       	movw	r18, r24
+     d9a:	27 70       	andi	r18, 0x07	; 7
+     d9c:	30 70       	andi	r19, 0x00	; 0
+     d9e:	81 e0       	ldi	r24, 0x01	; 1
+     da0:	90 e0       	ldi	r25, 0x00	; 0
+     da2:	02 2e       	mov	r0, r18
+     da4:	02 c0       	rjmp	.+4      	; 0xdaa <SetPinDirection+0x4c>
+     da6:	88 0f       	add	r24, r24
+     da8:	99 1f       	adc	r25, r25
+     daa:	0a 94       	dec	r0
+     dac:	e2 f7       	brpl	.-8      	; 0xda6 <SetPinDirection+0x48>
+     dae:	80 95       	com	r24
+     db0:	84 23       	and	r24, r20
+     db2:	8c 93       	st	X, r24
+     db4:	87 c1       	rjmp	.+782    	; 0x10c4 <SetPinDirection+0x366>
+			}
+			else if (PinDirection == OUTPUT) // Output
+     db6:	8b 81       	ldd	r24, Y+3	; 0x03
+     db8:	81 30       	cpi	r24, 0x01	; 1
+     dba:	b9 f4       	brne	.+46     	; 0xdea <SetPinDirection+0x8c>
+			{
+				SET_BIT(DDRA, PinNumber%NUM);
+     dbc:	aa e3       	ldi	r26, 0x3A	; 58
+     dbe:	b0 e0       	ldi	r27, 0x00	; 0
+     dc0:	ea e3       	ldi	r30, 0x3A	; 58
+     dc2:	f0 e0       	ldi	r31, 0x00	; 0
+     dc4:	80 81       	ld	r24, Z
+     dc6:	48 2f       	mov	r20, r24
+     dc8:	8a 81       	ldd	r24, Y+2	; 0x02
+     dca:	88 2f       	mov	r24, r24
+     dcc:	90 e0       	ldi	r25, 0x00	; 0
+     dce:	9c 01       	movw	r18, r24
+     dd0:	27 70       	andi	r18, 0x07	; 7
+     dd2:	30 70       	andi	r19, 0x00	; 0
+     dd4:	81 e0       	ldi	r24, 0x01	; 1
+     dd6:	90 e0       	ldi	r25, 0x00	; 0
+     dd8:	02 2e       	mov	r0, r18
+     dda:	02 c0       	rjmp	.+4      	; 0xde0 <SetPinDirection+0x82>
+     ddc:	88 0f       	add	r24, r24
+     dde:	99 1f       	adc	r25, r25
+     de0:	0a 94       	dec	r0
+     de2:	e2 f7       	brpl	.-8      	; 0xddc <SetPinDirection+0x7e>
+     de4:	84 2b       	or	r24, r20
+     de6:	8c 93       	st	X, r24
+     de8:	6d c1       	rjmp	.+730    	; 0x10c4 <SetPinDirection+0x366>
+			}
+			else if (PinDirection == INPUT_PU)
+     dea:	8b 81       	ldd	r24, Y+3	; 0x03
+     dec:	82 30       	cpi	r24, 0x02	; 2
+     dee:	09 f0       	breq	.+2      	; 0xdf2 <SetPinDirection+0x94>
+     df0:	69 c1       	rjmp	.+722    	; 0x10c4 <SetPinDirection+0x366>
+			{
+				CLR_BIT(DDRA, PinNumber%NUM); // define as input
+     df2:	aa e3       	ldi	r26, 0x3A	; 58
+     df4:	b0 e0       	ldi	r27, 0x00	; 0
+     df6:	ea e3       	ldi	r30, 0x3A	; 58
+     df8:	f0 e0       	ldi	r31, 0x00	; 0
+     dfa:	80 81       	ld	r24, Z
+     dfc:	48 2f       	mov	r20, r24
+     dfe:	8a 81       	ldd	r24, Y+2	; 0x02
+     e00:	88 2f       	mov	r24, r24
+     e02:	90 e0       	ldi	r25, 0x00	; 0
+     e04:	9c 01       	movw	r18, r24
+     e06:	27 70       	andi	r18, 0x07	; 7
+     e08:	30 70       	andi	r19, 0x00	; 0
+     e0a:	81 e0       	ldi	r24, 0x01	; 1
+     e0c:	90 e0       	ldi	r25, 0x00	; 0
+     e0e:	02 c0       	rjmp	.+4      	; 0xe14 <SetPinDirection+0xb6>
+     e10:	88 0f       	add	r24, r24
+     e12:	99 1f       	adc	r25, r25
+     e14:	2a 95       	dec	r18
+     e16:	e2 f7       	brpl	.-8      	; 0xe10 <SetPinDirection+0xb2>
+     e18:	80 95       	com	r24
+     e1a:	84 23       	and	r24, r20
+     e1c:	8c 93       	st	X, r24
+				SET_BIT(PORTA, PinNumber%NUM); // write high to be Input (pull up)
+     e1e:	ab e3       	ldi	r26, 0x3B	; 59
+     e20:	b0 e0       	ldi	r27, 0x00	; 0
+     e22:	eb e3       	ldi	r30, 0x3B	; 59
+     e24:	f0 e0       	ldi	r31, 0x00	; 0
+     e26:	80 81       	ld	r24, Z
+     e28:	48 2f       	mov	r20, r24
+     e2a:	8a 81       	ldd	r24, Y+2	; 0x02
+     e2c:	88 2f       	mov	r24, r24
+     e2e:	90 e0       	ldi	r25, 0x00	; 0
+     e30:	9c 01       	movw	r18, r24
+     e32:	27 70       	andi	r18, 0x07	; 7
+     e34:	30 70       	andi	r19, 0x00	; 0
+     e36:	81 e0       	ldi	r24, 0x01	; 1
+     e38:	90 e0       	ldi	r25, 0x00	; 0
+     e3a:	02 2e       	mov	r0, r18
+     e3c:	02 c0       	rjmp	.+4      	; 0xe42 <SetPinDirection+0xe4>
+     e3e:	88 0f       	add	r24, r24
+     e40:	99 1f       	adc	r25, r25
+     e42:	0a 94       	dec	r0
+     e44:	e2 f7       	brpl	.-8      	; 0xe3e <SetPinDirection+0xe0>
+     e46:	84 2b       	or	r24, r20
+     e48:	8c 93       	st	X, r24
+     e4a:	3c c1       	rjmp	.+632    	; 0x10c4 <SetPinDirection+0x366>
+			}
+		}
+
+	// 1 for port B
+		else if (PortLetter == PortB_Letter)
+     e4c:	89 81       	ldd	r24, Y+1	; 0x01
+     e4e:	81 30       	cpi	r24, 0x01	; 1
+     e50:	09 f0       	breq	.+2      	; 0xe54 <SetPinDirection+0xf6>
+     e52:	66 c0       	rjmp	.+204    	; 0xf20 <SetPinDirection+0x1c2>
+		{
+			//DDRB
+			if (PinDirection == INPUT) // Input (floating)
+     e54:	8b 81       	ldd	r24, Y+3	; 0x03
+     e56:	88 23       	and	r24, r24
+     e58:	c1 f4       	brne	.+48     	; 0xe8a <SetPinDirection+0x12c>
+			{
+				CLR_BIT(DDRB, PinNumber%NUM);
+     e5a:	a7 e3       	ldi	r26, 0x37	; 55
+     e5c:	b0 e0       	ldi	r27, 0x00	; 0
+     e5e:	e7 e3       	ldi	r30, 0x37	; 55
+     e60:	f0 e0       	ldi	r31, 0x00	; 0
+     e62:	80 81       	ld	r24, Z
+     e64:	48 2f       	mov	r20, r24
+     e66:	8a 81       	ldd	r24, Y+2	; 0x02
+     e68:	88 2f       	mov	r24, r24
+     e6a:	90 e0       	ldi	r25, 0x00	; 0
+     e6c:	9c 01       	movw	r18, r24
+     e6e:	27 70       	andi	r18, 0x07	; 7
+     e70:	30 70       	andi	r19, 0x00	; 0
+     e72:	81 e0       	ldi	r24, 0x01	; 1
+     e74:	90 e0       	ldi	r25, 0x00	; 0
+     e76:	02 2e       	mov	r0, r18
+     e78:	02 c0       	rjmp	.+4      	; 0xe7e <SetPinDirection+0x120>
+     e7a:	88 0f       	add	r24, r24
+     e7c:	99 1f       	adc	r25, r25
+     e7e:	0a 94       	dec	r0
+     e80:	e2 f7       	brpl	.-8      	; 0xe7a <SetPinDirection+0x11c>
+     e82:	80 95       	com	r24
+     e84:	84 23       	and	r24, r20
+     e86:	8c 93       	st	X, r24
+     e88:	1d c1       	rjmp	.+570    	; 0x10c4 <SetPinDirection+0x366>
+			}
+			else if (PinDirection == OUTPUT) // Output
+     e8a:	8b 81       	ldd	r24, Y+3	; 0x03
+     e8c:	81 30       	cpi	r24, 0x01	; 1
+     e8e:	b9 f4       	brne	.+46     	; 0xebe <SetPinDirection+0x160>
+			{
+				SET_BIT(DDRB, PinNumber%NUM);
+     e90:	a7 e3       	ldi	r26, 0x37	; 55
+     e92:	b0 e0       	ldi	r27, 0x00	; 0
+     e94:	e7 e3       	ldi	r30, 0x37	; 55
+     e96:	f0 e0       	ldi	r31, 0x00	; 0
+     e98:	80 81       	ld	r24, Z
+     e9a:	48 2f       	mov	r20, r24
+     e9c:	8a 81       	ldd	r24, Y+2	; 0x02
+     e9e:	88 2f       	mov	r24, r24
+     ea0:	90 e0       	ldi	r25, 0x00	; 0
+     ea2:	9c 01       	movw	r18, r24
+     ea4:	27 70       	andi	r18, 0x07	; 7
+     ea6:	30 70       	andi	r19, 0x00	; 0
+     ea8:	81 e0       	ldi	r24, 0x01	; 1
+     eaa:	90 e0       	ldi	r25, 0x00	; 0
+     eac:	02 2e       	mov	r0, r18
+     eae:	02 c0       	rjmp	.+4      	; 0xeb4 <SetPinDirection+0x156>
+     eb0:	88 0f       	add	r24, r24
+     eb2:	99 1f       	adc	r25, r25
+     eb4:	0a 94       	dec	r0
+     eb6:	e2 f7       	brpl	.-8      	; 0xeb0 <SetPinDirection+0x152>
+     eb8:	84 2b       	or	r24, r20
+     eba:	8c 93       	st	X, r24
+     ebc:	03 c1       	rjmp	.+518    	; 0x10c4 <SetPinDirection+0x366>
+			}
+			else if (PinDirection == INPUT_PU)
+     ebe:	8b 81       	ldd	r24, Y+3	; 0x03
+     ec0:	82 30       	cpi	r24, 0x02	; 2
+     ec2:	09 f0       	breq	.+2      	; 0xec6 <SetPinDirection+0x168>
+     ec4:	ff c0       	rjmp	.+510    	; 0x10c4 <SetPinDirection+0x366>
+			{
+				CLR_BIT(DDRB, PinNumber%NUM); // define as input
+     ec6:	a7 e3       	ldi	r26, 0x37	; 55
+     ec8:	b0 e0       	ldi	r27, 0x00	; 0
+     eca:	e7 e3       	ldi	r30, 0x37	; 55
+     ecc:	f0 e0       	ldi	r31, 0x00	; 0
+     ece:	80 81       	ld	r24, Z
+     ed0:	48 2f       	mov	r20, r24
+     ed2:	8a 81       	ldd	r24, Y+2	; 0x02
+     ed4:	88 2f       	mov	r24, r24
+     ed6:	90 e0       	ldi	r25, 0x00	; 0
+     ed8:	9c 01       	movw	r18, r24
+     eda:	27 70       	andi	r18, 0x07	; 7
+     edc:	30 70       	andi	r19, 0x00	; 0
+     ede:	81 e0       	ldi	r24, 0x01	; 1
+     ee0:	90 e0       	ldi	r25, 0x00	; 0
+     ee2:	02 c0       	rjmp	.+4      	; 0xee8 <SetPinDirection+0x18a>
+     ee4:	88 0f       	add	r24, r24
+     ee6:	99 1f       	adc	r25, r25
+     ee8:	2a 95       	dec	r18
+     eea:	e2 f7       	brpl	.-8      	; 0xee4 <SetPinDirection+0x186>
+     eec:	80 95       	com	r24
+     eee:	84 23       	and	r24, r20
+     ef0:	8c 93       	st	X, r24
+				SET_BIT(PORTB, PinNumber%NUM); // write high to be Input (pull up)
+     ef2:	a8 e3       	ldi	r26, 0x38	; 56
+     ef4:	b0 e0       	ldi	r27, 0x00	; 0
+     ef6:	e8 e3       	ldi	r30, 0x38	; 56
+     ef8:	f0 e0       	ldi	r31, 0x00	; 0
+     efa:	80 81       	ld	r24, Z
+     efc:	48 2f       	mov	r20, r24
+     efe:	8a 81       	ldd	r24, Y+2	; 0x02
+     f00:	88 2f       	mov	r24, r24
+     f02:	90 e0       	ldi	r25, 0x00	; 0
+     f04:	9c 01       	movw	r18, r24
+     f06:	27 70       	andi	r18, 0x07	; 7
+     f08:	30 70       	andi	r19, 0x00	; 0
+     f0a:	81 e0       	ldi	r24, 0x01	; 1
+     f0c:	90 e0       	ldi	r25, 0x00	; 0
+     f0e:	02 2e       	mov	r0, r18
+     f10:	02 c0       	rjmp	.+4      	; 0xf16 <SetPinDirection+0x1b8>
+     f12:	88 0f       	add	r24, r24
+     f14:	99 1f       	adc	r25, r25
+     f16:	0a 94       	dec	r0
+     f18:	e2 f7       	brpl	.-8      	; 0xf12 <SetPinDirection+0x1b4>
+     f1a:	84 2b       	or	r24, r20
+     f1c:	8c 93       	st	X, r24
+     f1e:	d2 c0       	rjmp	.+420    	; 0x10c4 <SetPinDirection+0x366>
+			}
+		}
+
+	// 2 for port C
+		else if (PortLetter == PortC_Letter)
+     f20:	89 81       	ldd	r24, Y+1	; 0x01
+     f22:	82 30       	cpi	r24, 0x02	; 2
+     f24:	09 f0       	breq	.+2      	; 0xf28 <SetPinDirection+0x1ca>
+     f26:	66 c0       	rjmp	.+204    	; 0xff4 <SetPinDirection+0x296>
+		{
+			//DDRC
+			if (PinDirection == INPUT) // Input (floating)
+     f28:	8b 81       	ldd	r24, Y+3	; 0x03
+     f2a:	88 23       	and	r24, r24
+     f2c:	c1 f4       	brne	.+48     	; 0xf5e <SetPinDirection+0x200>
+			{
+				CLR_BIT(DDRC, PinNumber%NUM);
+     f2e:	a4 e3       	ldi	r26, 0x34	; 52
+     f30:	b0 e0       	ldi	r27, 0x00	; 0
+     f32:	e4 e3       	ldi	r30, 0x34	; 52
+     f34:	f0 e0       	ldi	r31, 0x00	; 0
+     f36:	80 81       	ld	r24, Z
+     f38:	48 2f       	mov	r20, r24
+     f3a:	8a 81       	ldd	r24, Y+2	; 0x02
+     f3c:	88 2f       	mov	r24, r24
+     f3e:	90 e0       	ldi	r25, 0x00	; 0
+     f40:	9c 01       	movw	r18, r24
+     f42:	27 70       	andi	r18, 0x07	; 7
+     f44:	30 70       	andi	r19, 0x00	; 0
+     f46:	81 e0       	ldi	r24, 0x01	; 1
+     f48:	90 e0       	ldi	r25, 0x00	; 0
+     f4a:	02 2e       	mov	r0, r18
+     f4c:	02 c0       	rjmp	.+4      	; 0xf52 <SetPinDirection+0x1f4>
+     f4e:	88 0f       	add	r24, r24
+     f50:	99 1f       	adc	r25, r25
+     f52:	0a 94       	dec	r0
+     f54:	e2 f7       	brpl	.-8      	; 0xf4e <SetPinDirection+0x1f0>
+     f56:	80 95       	com	r24
+     f58:	84 23       	and	r24, r20
+     f5a:	8c 93       	st	X, r24
+     f5c:	b3 c0       	rjmp	.+358    	; 0x10c4 <SetPinDirection+0x366>
+			}
+			else if (PinDirection == OUTPUT) // Output
+     f5e:	8b 81       	ldd	r24, Y+3	; 0x03
+     f60:	81 30       	cpi	r24, 0x01	; 1
+     f62:	b9 f4       	brne	.+46     	; 0xf92 <SetPinDirection+0x234>
+			{
+				SET_BIT(DDRC, PinNumber%NUM);
+     f64:	a4 e3       	ldi	r26, 0x34	; 52
+     f66:	b0 e0       	ldi	r27, 0x00	; 0
+     f68:	e4 e3       	ldi	r30, 0x34	; 52
+     f6a:	f0 e0       	ldi	r31, 0x00	; 0
+     f6c:	80 81       	ld	r24, Z
+     f6e:	48 2f       	mov	r20, r24
+     f70:	8a 81       	ldd	r24, Y+2	; 0x02
+     f72:	88 2f       	mov	r24, r24
+     f74:	90 e0       	ldi	r25, 0x00	; 0
+     f76:	9c 01       	movw	r18, r24
+     f78:	27 70       	andi	r18, 0x07	; 7
+     f7a:	30 70       	andi	r19, 0x00	; 0
+     f7c:	81 e0       	ldi	r24, 0x01	; 1
+     f7e:	90 e0       	ldi	r25, 0x00	; 0
+     f80:	02 2e       	mov	r0, r18
+     f82:	02 c0       	rjmp	.+4      	; 0xf88 <SetPinDirection+0x22a>
+     f84:	88 0f       	add	r24, r24
+     f86:	99 1f       	adc	r25, r25
+     f88:	0a 94       	dec	r0
+     f8a:	e2 f7       	brpl	.-8      	; 0xf84 <SetPinDirection+0x226>
+     f8c:	84 2b       	or	r24, r20
+     f8e:	8c 93       	st	X, r24
+     f90:	99 c0       	rjmp	.+306    	; 0x10c4 <SetPinDirection+0x366>
+			}
+			else if (PinDirection == INPUT_PU)
+     f92:	8b 81       	ldd	r24, Y+3	; 0x03
+     f94:	82 30       	cpi	r24, 0x02	; 2
+     f96:	09 f0       	breq	.+2      	; 0xf9a <SetPinDirection+0x23c>
+     f98:	95 c0       	rjmp	.+298    	; 0x10c4 <SetPinDirection+0x366>
+			{
+				CLR_BIT(DDRC, PinNumber%NUM); // define as input
+     f9a:	a4 e3       	ldi	r26, 0x34	; 52
+     f9c:	b0 e0       	ldi	r27, 0x00	; 0
+     f9e:	e4 e3       	ldi	r30, 0x34	; 52
+     fa0:	f0 e0       	ldi	r31, 0x00	; 0
+     fa2:	80 81       	ld	r24, Z
+     fa4:	48 2f       	mov	r20, r24
+     fa6:	8a 81       	ldd	r24, Y+2	; 0x02
+     fa8:	88 2f       	mov	r24, r24
+     faa:	90 e0       	ldi	r25, 0x00	; 0
+     fac:	9c 01       	movw	r18, r24
+     fae:	27 70       	andi	r18, 0x07	; 7
+     fb0:	30 70       	andi	r19, 0x00	; 0
+     fb2:	81 e0       	ldi	r24, 0x01	; 1
+     fb4:	90 e0       	ldi	r25, 0x00	; 0
+     fb6:	02 c0       	rjmp	.+4      	; 0xfbc <SetPinDirection+0x25e>
+     fb8:	88 0f       	add	r24, r24
+     fba:	99 1f       	adc	r25, r25
+     fbc:	2a 95       	dec	r18
+     fbe:	e2 f7       	brpl	.-8      	; 0xfb8 <SetPinDirection+0x25a>
+     fc0:	80 95       	com	r24
+     fc2:	84 23       	and	r24, r20
+     fc4:	8c 93       	st	X, r24
+				SET_BIT(PORTC, PinNumber%NUM); // write high to be Input (pull up)
+     fc6:	a5 e3       	ldi	r26, 0x35	; 53
+     fc8:	b0 e0       	ldi	r27, 0x00	; 0
+     fca:	e5 e3       	ldi	r30, 0x35	; 53
+     fcc:	f0 e0       	ldi	r31, 0x00	; 0
+     fce:	80 81       	ld	r24, Z
+     fd0:	48 2f       	mov	r20, r24
+     fd2:	8a 81       	ldd	r24, Y+2	; 0x02
+     fd4:	88 2f       	mov	r24, r24
+     fd6:	90 e0       	ldi	r25, 0x00	; 0
+     fd8:	9c 01       	movw	r18, r24
+     fda:	27 70       	andi	r18, 0x07	; 7
+     fdc:	30 70       	andi	r19, 0x00	; 0
+     fde:	81 e0       	ldi	r24, 0x01	; 1
+     fe0:	90 e0       	ldi	r25, 0x00	; 0
+     fe2:	02 2e       	mov	r0, r18
+     fe4:	02 c0       	rjmp	.+4      	; 0xfea <SetPinDirection+0x28c>
+     fe6:	88 0f       	add	r24, r24
+     fe8:	99 1f       	adc	r25, r25
+     fea:	0a 94       	dec	r0
+     fec:	e2 f7       	brpl	.-8      	; 0xfe6 <SetPinDirection+0x288>
+     fee:	84 2b       	or	r24, r20
+     ff0:	8c 93       	st	X, r24
+     ff2:	68 c0       	rjmp	.+208    	; 0x10c4 <SetPinDirection+0x366>
+			}
+		}
+
+	// 3 for port D
+		else if (PortLetter == PortD_Letter)
+     ff4:	89 81       	ldd	r24, Y+1	; 0x01
+     ff6:	83 30       	cpi	r24, 0x03	; 3
+     ff8:	09 f0       	breq	.+2      	; 0xffc <SetPinDirection+0x29e>
+     ffa:	64 c0       	rjmp	.+200    	; 0x10c4 <SetPinDirection+0x366>
+		{
+			//DDRA
+			if (PinDirection == INPUT) // Input (floating)
+     ffc:	8b 81       	ldd	r24, Y+3	; 0x03
+     ffe:	88 23       	and	r24, r24
+    1000:	c1 f4       	brne	.+48     	; 0x1032 <SetPinDirection+0x2d4>
+			{
+				CLR_BIT(DDRD, PinNumber%NUM);
+    1002:	a1 e3       	ldi	r26, 0x31	; 49
+    1004:	b0 e0       	ldi	r27, 0x00	; 0
+    1006:	e1 e3       	ldi	r30, 0x31	; 49
+    1008:	f0 e0       	ldi	r31, 0x00	; 0
+    100a:	80 81       	ld	r24, Z
+    100c:	48 2f       	mov	r20, r24
+    100e:	8a 81       	ldd	r24, Y+2	; 0x02
+    1010:	88 2f       	mov	r24, r24
+    1012:	90 e0       	ldi	r25, 0x00	; 0
+    1014:	9c 01       	movw	r18, r24
+    1016:	27 70       	andi	r18, 0x07	; 7
+    1018:	30 70       	andi	r19, 0x00	; 0
+    101a:	81 e0       	ldi	r24, 0x01	; 1
+    101c:	90 e0       	ldi	r25, 0x00	; 0
+    101e:	02 2e       	mov	r0, r18
+    1020:	02 c0       	rjmp	.+4      	; 0x1026 <SetPinDirection+0x2c8>
+    1022:	88 0f       	add	r24, r24
+    1024:	99 1f       	adc	r25, r25
+    1026:	0a 94       	dec	r0
+    1028:	e2 f7       	brpl	.-8      	; 0x1022 <SetPinDirection+0x2c4>
+    102a:	80 95       	com	r24
+    102c:	84 23       	and	r24, r20
+    102e:	8c 93       	st	X, r24
+    1030:	49 c0       	rjmp	.+146    	; 0x10c4 <SetPinDirection+0x366>
+			}
+			else if (PinDirection == OUTPUT) // Output
+    1032:	8b 81       	ldd	r24, Y+3	; 0x03
+    1034:	81 30       	cpi	r24, 0x01	; 1
+    1036:	b9 f4       	brne	.+46     	; 0x1066 <SetPinDirection+0x308>
+			{
+				SET_BIT(DDRD, PinNumber%NUM);
+    1038:	a1 e3       	ldi	r26, 0x31	; 49
+    103a:	b0 e0       	ldi	r27, 0x00	; 0
+    103c:	e1 e3       	ldi	r30, 0x31	; 49
+    103e:	f0 e0       	ldi	r31, 0x00	; 0
+    1040:	80 81       	ld	r24, Z
+    1042:	48 2f       	mov	r20, r24
+    1044:	8a 81       	ldd	r24, Y+2	; 0x02
+    1046:	88 2f       	mov	r24, r24
+    1048:	90 e0       	ldi	r25, 0x00	; 0
+    104a:	9c 01       	movw	r18, r24
+    104c:	27 70       	andi	r18, 0x07	; 7
+    104e:	30 70       	andi	r19, 0x00	; 0
+    1050:	81 e0       	ldi	r24, 0x01	; 1
+    1052:	90 e0       	ldi	r25, 0x00	; 0
+    1054:	02 2e       	mov	r0, r18
+    1056:	02 c0       	rjmp	.+4      	; 0x105c <SetPinDirection+0x2fe>
+    1058:	88 0f       	add	r24, r24
+    105a:	99 1f       	adc	r25, r25
+    105c:	0a 94       	dec	r0
+    105e:	e2 f7       	brpl	.-8      	; 0x1058 <SetPinDirection+0x2fa>
+    1060:	84 2b       	or	r24, r20
+    1062:	8c 93       	st	X, r24
+    1064:	2f c0       	rjmp	.+94     	; 0x10c4 <SetPinDirection+0x366>
+			}
+			else if (PinDirection == INPUT_PU)
+    1066:	8b 81       	ldd	r24, Y+3	; 0x03
+    1068:	82 30       	cpi	r24, 0x02	; 2
+    106a:	61 f5       	brne	.+88     	; 0x10c4 <SetPinDirection+0x366>
+			{
+				CLR_BIT(DDRD, PinNumber%NUM); // define as input
+    106c:	a1 e3       	ldi	r26, 0x31	; 49
+    106e:	b0 e0       	ldi	r27, 0x00	; 0
+    1070:	e1 e3       	ldi	r30, 0x31	; 49
+    1072:	f0 e0       	ldi	r31, 0x00	; 0
+    1074:	80 81       	ld	r24, Z
+    1076:	48 2f       	mov	r20, r24
+    1078:	8a 81       	ldd	r24, Y+2	; 0x02
+    107a:	88 2f       	mov	r24, r24
+    107c:	90 e0       	ldi	r25, 0x00	; 0
+    107e:	9c 01       	movw	r18, r24
+    1080:	27 70       	andi	r18, 0x07	; 7
+    1082:	30 70       	andi	r19, 0x00	; 0
+    1084:	81 e0       	ldi	r24, 0x01	; 1
+    1086:	90 e0       	ldi	r25, 0x00	; 0
+    1088:	02 c0       	rjmp	.+4      	; 0x108e <SetPinDirection+0x330>
+    108a:	88 0f       	add	r24, r24
+    108c:	99 1f       	adc	r25, r25
+    108e:	2a 95       	dec	r18
+    1090:	e2 f7       	brpl	.-8      	; 0x108a <SetPinDirection+0x32c>
+    1092:	80 95       	com	r24
+    1094:	84 23       	and	r24, r20
+    1096:	8c 93       	st	X, r24
+				SET_BIT(PORTD, PinNumber%NUM); // write high to be Input (pull up)
+    1098:	a2 e3       	ldi	r26, 0x32	; 50
+    109a:	b0 e0       	ldi	r27, 0x00	; 0
+    109c:	e2 e3       	ldi	r30, 0x32	; 50
+    109e:	f0 e0       	ldi	r31, 0x00	; 0
+    10a0:	80 81       	ld	r24, Z
+    10a2:	48 2f       	mov	r20, r24
+    10a4:	8a 81       	ldd	r24, Y+2	; 0x02
+    10a6:	88 2f       	mov	r24, r24
+    10a8:	90 e0       	ldi	r25, 0x00	; 0
+    10aa:	9c 01       	movw	r18, r24
+    10ac:	27 70       	andi	r18, 0x07	; 7
+    10ae:	30 70       	andi	r19, 0x00	; 0
+    10b0:	81 e0       	ldi	r24, 0x01	; 1
+    10b2:	90 e0       	ldi	r25, 0x00	; 0
+    10b4:	02 2e       	mov	r0, r18
+    10b6:	02 c0       	rjmp	.+4      	; 0x10bc <SetPinDirection+0x35e>
+    10b8:	88 0f       	add	r24, r24
+    10ba:	99 1f       	adc	r25, r25
+    10bc:	0a 94       	dec	r0
+    10be:	e2 f7       	brpl	.-8      	; 0x10b8 <SetPinDirection+0x35a>
+    10c0:	84 2b       	or	r24, r20
+    10c2:	8c 93       	st	X, r24
+			}
+		}
+
+}
+    10c4:	0f 90       	pop	r0
+    10c6:	0f 90       	pop	r0
+    10c8:	0f 90       	pop	r0
+    10ca:	cf 91       	pop	r28
+    10cc:	df 91       	pop	r29
+    10ce:	08 95       	ret
+
+000010d0 <SetPinValue>:
+
+// Function (2): to set the output of the output pins (0-31)
+void SetPinValue(u8 PinNumber, u8 PinValue)
+{
+    10d0:	df 93       	push	r29
+    10d2:	cf 93       	push	r28
+    10d4:	00 d0       	rcall	.+0      	; 0x10d6 <SetPinValue+0x6>
+    10d6:	0f 92       	push	r0
+    10d8:	cd b7       	in	r28, 0x3d	; 61
+    10da:	de b7       	in	r29, 0x3e	; 62
+    10dc:	8a 83       	std	Y+2, r24	; 0x02
+    10de:	6b 83       	std	Y+3, r22	; 0x03
+	u8 PortLetter = PinNumber/NUM; // to get the Port letter (0 for A, 1 for B, 2 for C, 3 for D)
+    10e0:	8a 81       	ldd	r24, Y+2	; 0x02
+    10e2:	86 95       	lsr	r24
+    10e4:	86 95       	lsr	r24
+    10e6:	86 95       	lsr	r24
+    10e8:	89 83       	std	Y+1, r24	; 0x01
+	// PinNumber%NUM gives the number of the pin in the port from 0 to 7
+
+
+	if (PortLetter == PortA_Letter) // 0 for port A
+    10ea:	89 81       	ldd	r24, Y+1	; 0x01
+    10ec:	88 23       	and	r24, r24
+    10ee:	b1 f5       	brne	.+108    	; 0x115c <SetPinValue+0x8c>
+	{
+		//PORTA
+		if (PinValue == LOW) // Low
+    10f0:	8b 81       	ldd	r24, Y+3	; 0x03
+    10f2:	88 23       	and	r24, r24
+    10f4:	c1 f4       	brne	.+48     	; 0x1126 <SetPinValue+0x56>
+		{
+			CLR_BIT(PORTA, PinNumber%NUM);
+    10f6:	ab e3       	ldi	r26, 0x3B	; 59
+    10f8:	b0 e0       	ldi	r27, 0x00	; 0
+    10fa:	eb e3       	ldi	r30, 0x3B	; 59
+    10fc:	f0 e0       	ldi	r31, 0x00	; 0
+    10fe:	80 81       	ld	r24, Z
+    1100:	48 2f       	mov	r20, r24
+    1102:	8a 81       	ldd	r24, Y+2	; 0x02
+    1104:	88 2f       	mov	r24, r24
+    1106:	90 e0       	ldi	r25, 0x00	; 0
+    1108:	9c 01       	movw	r18, r24
+    110a:	27 70       	andi	r18, 0x07	; 7
+    110c:	30 70       	andi	r19, 0x00	; 0
+    110e:	81 e0       	ldi	r24, 0x01	; 1
+    1110:	90 e0       	ldi	r25, 0x00	; 0
+    1112:	02 2e       	mov	r0, r18
+    1114:	02 c0       	rjmp	.+4      	; 0x111a <SetPinValue+0x4a>
+    1116:	88 0f       	add	r24, r24
+    1118:	99 1f       	adc	r25, r25
+    111a:	0a 94       	dec	r0
+    111c:	e2 f7       	brpl	.-8      	; 0x1116 <SetPinValue+0x46>
+    111e:	80 95       	com	r24
+    1120:	84 23       	and	r24, r20
+    1122:	8c 93       	st	X, r24
+    1124:	c4 c0       	rjmp	.+392    	; 0x12ae <SetPinValue+0x1de>
+		}
+		else if (PinValue == HIGH) // High
+    1126:	8b 81       	ldd	r24, Y+3	; 0x03
+    1128:	81 30       	cpi	r24, 0x01	; 1
+    112a:	09 f0       	breq	.+2      	; 0x112e <SetPinValue+0x5e>
+    112c:	c0 c0       	rjmp	.+384    	; 0x12ae <SetPinValue+0x1de>
+		{
+			SET_BIT(PORTA, PinNumber%NUM);
+    112e:	ab e3       	ldi	r26, 0x3B	; 59
+    1130:	b0 e0       	ldi	r27, 0x00	; 0
+    1132:	eb e3       	ldi	r30, 0x3B	; 59
+    1134:	f0 e0       	ldi	r31, 0x00	; 0
+    1136:	80 81       	ld	r24, Z
+    1138:	48 2f       	mov	r20, r24
+    113a:	8a 81       	ldd	r24, Y+2	; 0x02
+    113c:	88 2f       	mov	r24, r24
+    113e:	90 e0       	ldi	r25, 0x00	; 0
+    1140:	9c 01       	movw	r18, r24
+    1142:	27 70       	andi	r18, 0x07	; 7
+    1144:	30 70       	andi	r19, 0x00	; 0
+    1146:	81 e0       	ldi	r24, 0x01	; 1
+    1148:	90 e0       	ldi	r25, 0x00	; 0
+    114a:	02 2e       	mov	r0, r18
+    114c:	02 c0       	rjmp	.+4      	; 0x1152 <SetPinValue+0x82>
+    114e:	88 0f       	add	r24, r24
+    1150:	99 1f       	adc	r25, r25
+    1152:	0a 94       	dec	r0
+    1154:	e2 f7       	brpl	.-8      	; 0x114e <SetPinValue+0x7e>
+    1156:	84 2b       	or	r24, r20
+    1158:	8c 93       	st	X, r24
+    115a:	a9 c0       	rjmp	.+338    	; 0x12ae <SetPinValue+0x1de>
+		}
+	}
+
+	else if (PortLetter == PortB_Letter) // 1 for port B
+    115c:	89 81       	ldd	r24, Y+1	; 0x01
+    115e:	81 30       	cpi	r24, 0x01	; 1
+    1160:	b1 f5       	brne	.+108    	; 0x11ce <SetPinValue+0xfe>
+	{
+		//PORTB
+		if (PinValue == LOW) // Low
+    1162:	8b 81       	ldd	r24, Y+3	; 0x03
+    1164:	88 23       	and	r24, r24
+    1166:	c1 f4       	brne	.+48     	; 0x1198 <SetPinValue+0xc8>
+		{
+			CLR_BIT(PORTB, PinNumber%NUM);
+    1168:	a8 e3       	ldi	r26, 0x38	; 56
+    116a:	b0 e0       	ldi	r27, 0x00	; 0
+    116c:	e8 e3       	ldi	r30, 0x38	; 56
+    116e:	f0 e0       	ldi	r31, 0x00	; 0
+    1170:	80 81       	ld	r24, Z
+    1172:	48 2f       	mov	r20, r24
+    1174:	8a 81       	ldd	r24, Y+2	; 0x02
+    1176:	88 2f       	mov	r24, r24
+    1178:	90 e0       	ldi	r25, 0x00	; 0
+    117a:	9c 01       	movw	r18, r24
+    117c:	27 70       	andi	r18, 0x07	; 7
+    117e:	30 70       	andi	r19, 0x00	; 0
+    1180:	81 e0       	ldi	r24, 0x01	; 1
+    1182:	90 e0       	ldi	r25, 0x00	; 0
+    1184:	02 2e       	mov	r0, r18
+    1186:	02 c0       	rjmp	.+4      	; 0x118c <SetPinValue+0xbc>
+    1188:	88 0f       	add	r24, r24
+    118a:	99 1f       	adc	r25, r25
+    118c:	0a 94       	dec	r0
+    118e:	e2 f7       	brpl	.-8      	; 0x1188 <SetPinValue+0xb8>
+    1190:	80 95       	com	r24
+    1192:	84 23       	and	r24, r20
+    1194:	8c 93       	st	X, r24
+    1196:	8b c0       	rjmp	.+278    	; 0x12ae <SetPinValue+0x1de>
+		}
+		else if (PinValue == HIGH) // High
+    1198:	8b 81       	ldd	r24, Y+3	; 0x03
+    119a:	81 30       	cpi	r24, 0x01	; 1
+    119c:	09 f0       	breq	.+2      	; 0x11a0 <SetPinValue+0xd0>
+    119e:	87 c0       	rjmp	.+270    	; 0x12ae <SetPinValue+0x1de>
+		{
+			SET_BIT(PORTB, PinNumber%NUM);
+    11a0:	a8 e3       	ldi	r26, 0x38	; 56
+    11a2:	b0 e0       	ldi	r27, 0x00	; 0
+    11a4:	e8 e3       	ldi	r30, 0x38	; 56
+    11a6:	f0 e0       	ldi	r31, 0x00	; 0
+    11a8:	80 81       	ld	r24, Z
+    11aa:	48 2f       	mov	r20, r24
+    11ac:	8a 81       	ldd	r24, Y+2	; 0x02
+    11ae:	88 2f       	mov	r24, r24
+    11b0:	90 e0       	ldi	r25, 0x00	; 0
+    11b2:	9c 01       	movw	r18, r24
+    11b4:	27 70       	andi	r18, 0x07	; 7
+    11b6:	30 70       	andi	r19, 0x00	; 0
+    11b8:	81 e0       	ldi	r24, 0x01	; 1
+    11ba:	90 e0       	ldi	r25, 0x00	; 0
+    11bc:	02 2e       	mov	r0, r18
+    11be:	02 c0       	rjmp	.+4      	; 0x11c4 <SetPinValue+0xf4>
+    11c0:	88 0f       	add	r24, r24
+    11c2:	99 1f       	adc	r25, r25
+    11c4:	0a 94       	dec	r0
+    11c6:	e2 f7       	brpl	.-8      	; 0x11c0 <SetPinValue+0xf0>
+    11c8:	84 2b       	or	r24, r20
+    11ca:	8c 93       	st	X, r24
+    11cc:	70 c0       	rjmp	.+224    	; 0x12ae <SetPinValue+0x1de>
+		}
+	}
+
+
+	else if (PortLetter == PortC_Letter) // 2 for port C
+    11ce:	89 81       	ldd	r24, Y+1	; 0x01
+    11d0:	82 30       	cpi	r24, 0x02	; 2
+    11d2:	b1 f5       	brne	.+108    	; 0x1240 <SetPinValue+0x170>
+	{
+		//PORTC
+		if (PinValue == LOW) // Low
+    11d4:	8b 81       	ldd	r24, Y+3	; 0x03
+    11d6:	88 23       	and	r24, r24
+    11d8:	c1 f4       	brne	.+48     	; 0x120a <SetPinValue+0x13a>
+		{
+			CLR_BIT(PORTC, PinNumber%NUM);
+    11da:	a5 e3       	ldi	r26, 0x35	; 53
+    11dc:	b0 e0       	ldi	r27, 0x00	; 0
+    11de:	e5 e3       	ldi	r30, 0x35	; 53
+    11e0:	f0 e0       	ldi	r31, 0x00	; 0
+    11e2:	80 81       	ld	r24, Z
+    11e4:	48 2f       	mov	r20, r24
+    11e6:	8a 81       	ldd	r24, Y+2	; 0x02
+    11e8:	88 2f       	mov	r24, r24
+    11ea:	90 e0       	ldi	r25, 0x00	; 0
+    11ec:	9c 01       	movw	r18, r24
+    11ee:	27 70       	andi	r18, 0x07	; 7
+    11f0:	30 70       	andi	r19, 0x00	; 0
+    11f2:	81 e0       	ldi	r24, 0x01	; 1
+    11f4:	90 e0       	ldi	r25, 0x00	; 0
+    11f6:	02 2e       	mov	r0, r18
+    11f8:	02 c0       	rjmp	.+4      	; 0x11fe <SetPinValue+0x12e>
+    11fa:	88 0f       	add	r24, r24
+    11fc:	99 1f       	adc	r25, r25
+    11fe:	0a 94       	dec	r0
+    1200:	e2 f7       	brpl	.-8      	; 0x11fa <SetPinValue+0x12a>
+    1202:	80 95       	com	r24
+    1204:	84 23       	and	r24, r20
+    1206:	8c 93       	st	X, r24
+    1208:	52 c0       	rjmp	.+164    	; 0x12ae <SetPinValue+0x1de>
+		}
+		else if (PinValue == HIGH) // High
+    120a:	8b 81       	ldd	r24, Y+3	; 0x03
+    120c:	81 30       	cpi	r24, 0x01	; 1
+    120e:	09 f0       	breq	.+2      	; 0x1212 <SetPinValue+0x142>
+    1210:	4e c0       	rjmp	.+156    	; 0x12ae <SetPinValue+0x1de>
+		{
+			SET_BIT(PORTC, PinNumber%NUM);
+    1212:	a5 e3       	ldi	r26, 0x35	; 53
+    1214:	b0 e0       	ldi	r27, 0x00	; 0
+    1216:	e5 e3       	ldi	r30, 0x35	; 53
+    1218:	f0 e0       	ldi	r31, 0x00	; 0
+    121a:	80 81       	ld	r24, Z
+    121c:	48 2f       	mov	r20, r24
+    121e:	8a 81       	ldd	r24, Y+2	; 0x02
+    1220:	88 2f       	mov	r24, r24
+    1222:	90 e0       	ldi	r25, 0x00	; 0
+    1224:	9c 01       	movw	r18, r24
+    1226:	27 70       	andi	r18, 0x07	; 7
+    1228:	30 70       	andi	r19, 0x00	; 0
+    122a:	81 e0       	ldi	r24, 0x01	; 1
+    122c:	90 e0       	ldi	r25, 0x00	; 0
+    122e:	02 2e       	mov	r0, r18
+    1230:	02 c0       	rjmp	.+4      	; 0x1236 <SetPinValue+0x166>
+    1232:	88 0f       	add	r24, r24
+    1234:	99 1f       	adc	r25, r25
+    1236:	0a 94       	dec	r0
+    1238:	e2 f7       	brpl	.-8      	; 0x1232 <SetPinValue+0x162>
+    123a:	84 2b       	or	r24, r20
+    123c:	8c 93       	st	X, r24
+    123e:	37 c0       	rjmp	.+110    	; 0x12ae <SetPinValue+0x1de>
+		}
+	}
+
+	else if (PortLetter == PortD_Letter) // 3 for port D
+    1240:	89 81       	ldd	r24, Y+1	; 0x01
+    1242:	83 30       	cpi	r24, 0x03	; 3
+    1244:	a1 f5       	brne	.+104    	; 0x12ae <SetPinValue+0x1de>
+	{
+		//PORTD
+		if (PinValue == LOW) // Low
+    1246:	8b 81       	ldd	r24, Y+3	; 0x03
+    1248:	88 23       	and	r24, r24
+    124a:	c1 f4       	brne	.+48     	; 0x127c <SetPinValue+0x1ac>
+		{
+			CLR_BIT(PORTD, PinNumber%NUM);
+    124c:	a2 e3       	ldi	r26, 0x32	; 50
+    124e:	b0 e0       	ldi	r27, 0x00	; 0
+    1250:	e2 e3       	ldi	r30, 0x32	; 50
+    1252:	f0 e0       	ldi	r31, 0x00	; 0
+    1254:	80 81       	ld	r24, Z
+    1256:	48 2f       	mov	r20, r24
+    1258:	8a 81       	ldd	r24, Y+2	; 0x02
+    125a:	88 2f       	mov	r24, r24
+    125c:	90 e0       	ldi	r25, 0x00	; 0
+    125e:	9c 01       	movw	r18, r24
+    1260:	27 70       	andi	r18, 0x07	; 7
+    1262:	30 70       	andi	r19, 0x00	; 0
+    1264:	81 e0       	ldi	r24, 0x01	; 1
+    1266:	90 e0       	ldi	r25, 0x00	; 0
+    1268:	02 2e       	mov	r0, r18
+    126a:	02 c0       	rjmp	.+4      	; 0x1270 <SetPinValue+0x1a0>
+    126c:	88 0f       	add	r24, r24
+    126e:	99 1f       	adc	r25, r25
+    1270:	0a 94       	dec	r0
+    1272:	e2 f7       	brpl	.-8      	; 0x126c <SetPinValue+0x19c>
+    1274:	80 95       	com	r24
+    1276:	84 23       	and	r24, r20
+    1278:	8c 93       	st	X, r24
+    127a:	19 c0       	rjmp	.+50     	; 0x12ae <SetPinValue+0x1de>
+		}
+		else if (PinValue == HIGH) // High
+    127c:	8b 81       	ldd	r24, Y+3	; 0x03
+    127e:	81 30       	cpi	r24, 0x01	; 1
+    1280:	b1 f4       	brne	.+44     	; 0x12ae <SetPinValue+0x1de>
+		{
+			SET_BIT(PORTD, PinNumber%NUM);
+    1282:	a2 e3       	ldi	r26, 0x32	; 50
+    1284:	b0 e0       	ldi	r27, 0x00	; 0
+    1286:	e2 e3       	ldi	r30, 0x32	; 50
+    1288:	f0 e0       	ldi	r31, 0x00	; 0
+    128a:	80 81       	ld	r24, Z
+    128c:	48 2f       	mov	r20, r24
+    128e:	8a 81       	ldd	r24, Y+2	; 0x02
+    1290:	88 2f       	mov	r24, r24
+    1292:	90 e0       	ldi	r25, 0x00	; 0
+    1294:	9c 01       	movw	r18, r24
+    1296:	27 70       	andi	r18, 0x07	; 7
+    1298:	30 70       	andi	r19, 0x00	; 0
+    129a:	81 e0       	ldi	r24, 0x01	; 1
+    129c:	90 e0       	ldi	r25, 0x00	; 0
+    129e:	02 2e       	mov	r0, r18
+    12a0:	02 c0       	rjmp	.+4      	; 0x12a6 <SetPinValue+0x1d6>
+    12a2:	88 0f       	add	r24, r24
+    12a4:	99 1f       	adc	r25, r25
+    12a6:	0a 94       	dec	r0
+    12a8:	e2 f7       	brpl	.-8      	; 0x12a2 <SetPinValue+0x1d2>
+    12aa:	84 2b       	or	r24, r20
+    12ac:	8c 93       	st	X, r24
+		}
+	}
+}
+    12ae:	0f 90       	pop	r0
+    12b0:	0f 90       	pop	r0
+    12b2:	0f 90       	pop	r0
+    12b4:	cf 91       	pop	r28
+    12b6:	df 91       	pop	r29
+    12b8:	08 95       	ret
+
+000012ba <GetPinValue>:
+
+
+
+// Fucntion (3): to get the value of the input pin
+u8 GetPinValue(u8 PinNumber) // return the value of pin 0 - 31
+{
+    12ba:	df 93       	push	r29
+    12bc:	cf 93       	push	r28
+    12be:	00 d0       	rcall	.+0      	; 0x12c0 <GetPinValue+0x6>
+    12c0:	00 d0       	rcall	.+0      	; 0x12c2 <GetPinValue+0x8>
+    12c2:	cd b7       	in	r28, 0x3d	; 61
+    12c4:	de b7       	in	r29, 0x3e	; 62
+    12c6:	8a 83       	std	Y+2, r24	; 0x02
+	u8 PortLetter = PinNumber/NUM; // to get the Port letter (0 for A, 1 for B, 2 for C, 3 for D)
+    12c8:	8a 81       	ldd	r24, Y+2	; 0x02
+    12ca:	86 95       	lsr	r24
+    12cc:	86 95       	lsr	r24
+    12ce:	86 95       	lsr	r24
+    12d0:	89 83       	std	Y+1, r24	; 0x01
+	// PinNumber%NUM gives the number of the pin in the port from 0 to 7
+
+	if (PortLetter == PortA_Letter) // 0 for port A
+    12d2:	89 81       	ldd	r24, Y+1	; 0x01
+    12d4:	88 23       	and	r24, r24
+    12d6:	a9 f4       	brne	.+42     	; 0x1302 <GetPinValue+0x48>
+	{
+		//PINA
+		return GET_BIT(PINA, PinNumber%NUM);
+    12d8:	e9 e3       	ldi	r30, 0x39	; 57
+    12da:	f0 e0       	ldi	r31, 0x00	; 0
+    12dc:	80 81       	ld	r24, Z
+    12de:	28 2f       	mov	r18, r24
+    12e0:	30 e0       	ldi	r19, 0x00	; 0
+    12e2:	8a 81       	ldd	r24, Y+2	; 0x02
+    12e4:	88 2f       	mov	r24, r24
+    12e6:	90 e0       	ldi	r25, 0x00	; 0
+    12e8:	87 70       	andi	r24, 0x07	; 7
+    12ea:	90 70       	andi	r25, 0x00	; 0
+    12ec:	a9 01       	movw	r20, r18
+    12ee:	02 c0       	rjmp	.+4      	; 0x12f4 <GetPinValue+0x3a>
+    12f0:	55 95       	asr	r21
+    12f2:	47 95       	ror	r20
+    12f4:	8a 95       	dec	r24
+    12f6:	e2 f7       	brpl	.-8      	; 0x12f0 <GetPinValue+0x36>
+    12f8:	ca 01       	movw	r24, r20
+    12fa:	58 2f       	mov	r21, r24
+    12fc:	51 70       	andi	r21, 0x01	; 1
+    12fe:	5b 83       	std	Y+3, r21	; 0x03
+    1300:	49 c0       	rjmp	.+146    	; 0x1394 <GetPinValue+0xda>
+	}
+	else if (PortLetter == PortB_Letter) // 1 for port B
+    1302:	89 81       	ldd	r24, Y+1	; 0x01
+    1304:	81 30       	cpi	r24, 0x01	; 1
+    1306:	a9 f4       	brne	.+42     	; 0x1332 <GetPinValue+0x78>
+	{
+		//PINB
+		return GET_BIT(PINB, PinNumber%NUM);
+    1308:	e6 e3       	ldi	r30, 0x36	; 54
+    130a:	f0 e0       	ldi	r31, 0x00	; 0
+    130c:	80 81       	ld	r24, Z
+    130e:	28 2f       	mov	r18, r24
+    1310:	30 e0       	ldi	r19, 0x00	; 0
+    1312:	8a 81       	ldd	r24, Y+2	; 0x02
+    1314:	88 2f       	mov	r24, r24
+    1316:	90 e0       	ldi	r25, 0x00	; 0
+    1318:	87 70       	andi	r24, 0x07	; 7
+    131a:	90 70       	andi	r25, 0x00	; 0
+    131c:	a9 01       	movw	r20, r18
+    131e:	02 c0       	rjmp	.+4      	; 0x1324 <GetPinValue+0x6a>
+    1320:	55 95       	asr	r21
+    1322:	47 95       	ror	r20
+    1324:	8a 95       	dec	r24
+    1326:	e2 f7       	brpl	.-8      	; 0x1320 <GetPinValue+0x66>
+    1328:	ca 01       	movw	r24, r20
+    132a:	58 2f       	mov	r21, r24
+    132c:	51 70       	andi	r21, 0x01	; 1
+    132e:	5b 83       	std	Y+3, r21	; 0x03
+    1330:	31 c0       	rjmp	.+98     	; 0x1394 <GetPinValue+0xda>
+	}
+
+	else if (PortLetter == PortC_Letter) // 2 for port C
+    1332:	89 81       	ldd	r24, Y+1	; 0x01
+    1334:	82 30       	cpi	r24, 0x02	; 2
+    1336:	a9 f4       	brne	.+42     	; 0x1362 <GetPinValue+0xa8>
+	{
+		//PINC
+		return GET_BIT(PINC, PinNumber%NUM);
+    1338:	e3 e3       	ldi	r30, 0x33	; 51
+    133a:	f0 e0       	ldi	r31, 0x00	; 0
+    133c:	80 81       	ld	r24, Z
+    133e:	28 2f       	mov	r18, r24
+    1340:	30 e0       	ldi	r19, 0x00	; 0
+    1342:	8a 81       	ldd	r24, Y+2	; 0x02
+    1344:	88 2f       	mov	r24, r24
+    1346:	90 e0       	ldi	r25, 0x00	; 0
+    1348:	87 70       	andi	r24, 0x07	; 7
+    134a:	90 70       	andi	r25, 0x00	; 0
+    134c:	a9 01       	movw	r20, r18
+    134e:	02 c0       	rjmp	.+4      	; 0x1354 <GetPinValue+0x9a>
+    1350:	55 95       	asr	r21
+    1352:	47 95       	ror	r20
+    1354:	8a 95       	dec	r24
+    1356:	e2 f7       	brpl	.-8      	; 0x1350 <GetPinValue+0x96>
+    1358:	ca 01       	movw	r24, r20
+    135a:	58 2f       	mov	r21, r24
+    135c:	51 70       	andi	r21, 0x01	; 1
+    135e:	5b 83       	std	Y+3, r21	; 0x03
+    1360:	19 c0       	rjmp	.+50     	; 0x1394 <GetPinValue+0xda>
+	}
+
+	else if (PortLetter == PortD_Letter) // 3 for port D
+    1362:	89 81       	ldd	r24, Y+1	; 0x01
+    1364:	83 30       	cpi	r24, 0x03	; 3
+    1366:	a9 f4       	brne	.+42     	; 0x1392 <GetPinValue+0xd8>
+	{
+		//PIND
+		return GET_BIT(PIND, PinNumber%NUM);
+    1368:	e0 e3       	ldi	r30, 0x30	; 48
+    136a:	f0 e0       	ldi	r31, 0x00	; 0
+    136c:	80 81       	ld	r24, Z
+    136e:	28 2f       	mov	r18, r24
+    1370:	30 e0       	ldi	r19, 0x00	; 0
+    1372:	8a 81       	ldd	r24, Y+2	; 0x02
+    1374:	88 2f       	mov	r24, r24
+    1376:	90 e0       	ldi	r25, 0x00	; 0
+    1378:	87 70       	andi	r24, 0x07	; 7
+    137a:	90 70       	andi	r25, 0x00	; 0
+    137c:	a9 01       	movw	r20, r18
+    137e:	02 c0       	rjmp	.+4      	; 0x1384 <GetPinValue+0xca>
+    1380:	55 95       	asr	r21
+    1382:	47 95       	ror	r20
+    1384:	8a 95       	dec	r24
+    1386:	e2 f7       	brpl	.-8      	; 0x1380 <GetPinValue+0xc6>
+    1388:	ca 01       	movw	r24, r20
+    138a:	58 2f       	mov	r21, r24
+    138c:	51 70       	andi	r21, 0x01	; 1
+    138e:	5b 83       	std	Y+3, r21	; 0x03
+    1390:	01 c0       	rjmp	.+2      	; 0x1394 <GetPinValue+0xda>
+    1392:	02 c0       	rjmp	.+4      	; 0x1398 <GetPinValue+0xde>
+	}
+}
+    1394:	8b 81       	ldd	r24, Y+3	; 0x03
+    1396:	8c 83       	std	Y+4, r24	; 0x04
+    1398:	8c 81       	ldd	r24, Y+4	; 0x04
+    139a:	0f 90       	pop	r0
+    139c:	0f 90       	pop	r0
+    139e:	0f 90       	pop	r0
+    13a0:	0f 90       	pop	r0
+    13a2:	cf 91       	pop	r28
+    13a4:	df 91       	pop	r29
+    13a6:	08 95       	ret
+
+000013a8 <main>:
+	// Declared Structures (if Type definition)
+	// Declared Functions
+	// Global variables (Declaration and Initialization)
+
+// Enum
+
+    13a8:	df 93       	push	r29
+    13aa:	cf 93       	push	r28
+    13ac:	00 d0       	rcall	.+0      	; 0x13ae <main+0x6>
+    13ae:	00 d0       	rcall	.+0      	; 0x13b0 <main+0x8>
+    13b0:	cd b7       	in	r28, 0x3d	; 61
+    13b2:	de b7       	in	r29, 0x3e	; 62
+
+void main(void)
+{
+
+		// Declaration and Initialization (executed once)
+		// Program Variables
+    13b4:	e4 e3       	ldi	r30, 0x34	; 52
+    13b6:	f0 e0       	ldi	r31, 0x00	; 0
+    13b8:	8f ef       	ldi	r24, 0xFF	; 255
+    13ba:	80 83       	st	Z, r24
+
+		// Pin Direction (Input/Output)
+			DDRC = 0xFF; // define port C 8 pins output for LEDs
+
+		// Pin Values (initialization)
+		// Module Initialization
+    13bc:	af e5       	ldi	r26, 0x5F	; 95
+    13be:	b0 e0       	ldi	r27, 0x00	; 0
+    13c0:	ef e5       	ldi	r30, 0x5F	; 95
+    13c2:	f0 e0       	ldi	r31, 0x00	; 0
+    13c4:	80 81       	ld	r24, Z
+    13c6:	80 68       	ori	r24, 0x80	; 128
+    13c8:	8c 93       	st	X, r24
+
+
+		SET_BIT(SREG, I); // global interrupt enable
+
+    13ca:	19 82       	std	Y+1, r1	; 0x01
+		// Initialization of ADC and Configuration Specifications
+    13cc:	81 e0       	ldi	r24, 0x01	; 1
+    13ce:	8a 83       	std	Y+2, r24	; 0x02
+			ADC_CONFIG MyConfig; // Create an object of the ADC_CONFIG data structure type
+    13d0:	1b 82       	std	Y+3, r1	; 0x03
+			MyConfig.Ref = REF_AREF; // let AREF pin is the VREF
+    13d2:	1c 82       	std	Y+4, r1	; 0x04
+			MyConfig.Adjustment = ADJUSTMENT_LEFT; // Left Adjustment
+    13d4:	89 81       	ldd	r24, Y+1	; 0x01
+    13d6:	9a 81       	ldd	r25, Y+2	; 0x02
+    13d8:	ab 81       	ldd	r26, Y+3	; 0x03
+    13da:	bc 81       	ldd	r27, Y+4	; 0x04
+    13dc:	bc 01       	movw	r22, r24
+    13de:	cd 01       	movw	r24, r26
+    13e0:	0e 94 36 00 	call	0x6c	; 0x6c <ADC_Init>
+			MyConfig.Channel = CHANNEL_ADC0; // use ADC0 <-> A0 pin, don't define it as input
+    13e4:	a6 e2       	ldi	r26, 0x26	; 38
+    13e6:	b0 e0       	ldi	r27, 0x00	; 0
+    13e8:	e6 e2       	ldi	r30, 0x26	; 38
+    13ea:	f0 e0       	ldi	r31, 0x00	; 0
+    13ec:	80 81       	ld	r24, Z
+    13ee:	88 60       	ori	r24, 0x08	; 8
+    13f0:	8c 93       	st	X, r24
+			MyConfig.Prescaler = PRESCALER_2; // use the prescaler of 2 i.e. sampling frequency = F_CPU / 2 = 4MHz
+    13f2:	a6 e2       	ldi	r26, 0x26	; 38
+    13f4:	b0 e0       	ldi	r27, 0x00	; 0
+    13f6:	e6 e2       	ldi	r30, 0x26	; 38
+    13f8:	f0 e0       	ldi	r31, 0x00	; 0
+    13fa:	80 81       	ld	r24, Z
+    13fc:	80 64       	ori	r24, 0x40	; 64
+    13fe:	8c 93       	st	X, r24
+    1400:	ff cf       	rjmp	.-2      	; 0x1400 <main+0x58>
+
+00001402 <__vector_16>:
+	}
+
+	// Don't Add anything here (will not be executed)
+}
+
+
+    1402:	1f 92       	push	r1
+    1404:	0f 92       	push	r0
+    1406:	0f b6       	in	r0, 0x3f	; 63
+    1408:	0f 92       	push	r0
+    140a:	11 24       	eor	r1, r1
+    140c:	8f 93       	push	r24
+    140e:	af 93       	push	r26
+    1410:	bf 93       	push	r27
+    1412:	ef 93       	push	r30
+    1414:	ff 93       	push	r31
+    1416:	df 93       	push	r29
+    1418:	cf 93       	push	r28
+    141a:	0f 92       	push	r0
+    141c:	cd b7       	in	r28, 0x3d	; 61
+    141e:	de b7       	in	r29, 0x3e	; 62
+// Function executed on interrupt request (ADC get data)
+    1420:	e5 e2       	ldi	r30, 0x25	; 37
+    1422:	f0 e0       	ldi	r31, 0x00	; 0
+    1424:	80 81       	ld	r24, Z
+    1426:	89 83       	std	Y+1, r24	; 0x01
+ISR(__vector_16) // ADC complete conversion (Vector No. 17  - 1). Executed when ADC completes conversion
+    1428:	e5 e3       	ldi	r30, 0x35	; 53
+    142a:	f0 e0       	ldi	r31, 0x00	; 0
+    142c:	89 81       	ldd	r24, Y+1	; 0x01
+    142e:	80 83       	st	Z, r24
+{
+	u8 data = ADCH; // get data from ADCH, 8 bit resolution
+    1430:	a6 e2       	ldi	r26, 0x26	; 38
+    1432:	b0 e0       	ldi	r27, 0x00	; 0
+    1434:	e6 e2       	ldi	r30, 0x26	; 38
+    1436:	f0 e0       	ldi	r31, 0x00	; 0
+    1438:	80 81       	ld	r24, Z
+    143a:	80 64       	ori	r24, 0x40	; 64
+    143c:	8c 93       	st	X, r24
+	PORTC = data; // write data on PORTC (8LEDs)
+	// automatically reset the flag
+    143e:	0f 90       	pop	r0
+    1440:	cf 91       	pop	r28
+    1442:	df 91       	pop	r29
+    1444:	ff 91       	pop	r31
+    1446:	ef 91       	pop	r30
+    1448:	bf 91       	pop	r27
+    144a:	af 91       	pop	r26
+    144c:	8f 91       	pop	r24
+    144e:	0f 90       	pop	r0
+    1450:	0f be       	out	0x3f, r0	; 63
+    1452:	0f 90       	pop	r0
+    1454:	1f 90       	pop	r1
+    1456:	18 95       	reti
+
+00001458 <_exit>:
+    1458:	f8 94       	cli
+
+0000145a <__stop_program>:
+    145a:	ff cf       	rjmp	.-2      	; 0x145a <__stop_program>
