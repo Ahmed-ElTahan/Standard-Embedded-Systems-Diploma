@@ -81,9 +81,7 @@ void TWI_Master_Init(void)
 }
 void TWI_Master_Start(void)
 {
-	SET_BIT(TWCR, TWEN);
-	SET_BIT(TWCR, TWSTA);
-	SET_BIT(TWCR, TWINT);
+    TWCR= (1<<TWINT)|(1<<TWSTA)|(1<<TWEN);
 
 	while(GET_BIT(TWCR, TWINT) == 0);
 	while((TWSR & (0xF8)) != 0x08);
@@ -92,8 +90,8 @@ void TWI_Master_Start(void)
 void TWI_Master_Write_Addr(u8 Slave_Addr)
 {
 	TWDR = Slave_Addr;
-	SET_BIT(TWCR, TWEN);
-	SET_BIT(TWCR, TWINT);
+    TWCR= (1<<TWINT)|(1<<TWEN);
+
 
 	while(GET_BIT(TWCR, TWINT) == 0);
 	while((TWSR & (0xF8)) != 0x18);
@@ -103,8 +101,8 @@ void TWI_Master_Write_Addr(u8 Slave_Addr)
 void TWI_Master_Write_Data(u8 Master_Data)
 {
 	TWDR = Master_Data;
-	SET_BIT(TWCR, TWEN);
-	SET_BIT(TWCR, TWINT);
+    TWCR= (1<<TWINT)|(1<<TWEN);
+
 
 	while(GET_BIT(TWCR, TWINT) == 0);
 	while((TWSR & (0xF8)) != 0x28);

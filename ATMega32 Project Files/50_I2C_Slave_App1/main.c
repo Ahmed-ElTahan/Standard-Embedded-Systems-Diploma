@@ -87,9 +87,8 @@ void TWI_Slave_Match_ACK(void)
 {
 	while((TWSR &(0xF8)) != 0x60)
 	{
-		SET_BIT(TWCR, TWEN);
-		SET_BIT(TWCR, TWEA);
-		SET_BIT(TWCR, TWINT);
+
+	    TWCR= (1<<TWINT)|(1<<TWEA)|(1<<TWEN);
 
 		while(GET_BIT(TWCR, TWINT) == 0);
 
@@ -101,9 +100,7 @@ u8 TWI_Slave_Read_Data(void)
 {
 	u8 x;
 
-	SET_BIT(TWCR, TWEN);
-	SET_BIT(TWCR, TWEA);
-	SET_BIT(TWCR, TWINT);
+    TWCR= (1<<TWINT)|(1<<TWEA)|(1<<TWEN);
 
 	while(GET_BIT(TWCR, TWINT) == 0);
 	while((TWSR &(0xF8)) != 0x80);
