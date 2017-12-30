@@ -107,7 +107,7 @@ void TWI_Master_Stop(void)
 
 void TWI_Master_Read(u8* ptr)
 {
-	TWCR=(1<<TWINT)|(1<<TWEN);SET_BIT(TWCR, TWEN);
+	TWCR=(1<<TWINT)|(1<<TWEN);
 	while(GET_BIT(TWCR, TWINT) == 0);
 	*ptr = TWDR;
 }
