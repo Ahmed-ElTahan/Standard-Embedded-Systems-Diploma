@@ -30,10 +30,10 @@ endif
 
 # Add inputs and outputs from these tool invocations to the build variables 
 LSS += \
-50_I2C_Master_App1.lss \
+51_Internal_EEPROM.lss \
 
 FLASH_IMAGE += \
-50_I2C_Master_App1.hex \
+51_Internal_EEPROM.hex \
 
 SIZEDUMMY += \
 sizedummy \
@@ -43,48 +43,47 @@ avrdudedummy \
 
 
 # All Target
-all: 50_I2C_Master_App1.elf secondary-outputs
+all: 51_Internal_EEPROM.elf secondary-outputs
 
 # Tool invocations
-50_I2C_Master_App1.elf: $(OBJS) $(USER_OBJS)
+51_Internal_EEPROM.elf: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: AVR C Linker'
-	avr-gcc -Wl,-Map,50_I2C_Master_App1.map -mmcu=atmega32 -o "50_I2C_Master_App1.elf" $(OBJS) $(USER_OBJS) $(LIBS)
+	avr-gcc -Wl,-Map,51_Internal_EEPROM.map -mmcu=atmega32 -o "51_Internal_EEPROM.elf" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
-50_I2C_Master_App1.lss: 50_I2C_Master_App1.elf
+51_Internal_EEPROM.lss: 51_Internal_EEPROM.elf
 	@echo 'Invoking: AVR Create Extended Listing'
-	-avr-objdump -h -S 50_I2C_Master_App1.elf  >"50_I2C_Master_App1.lss"
+	-avr-objdump -h -S 51_Internal_EEPROM.elf  >"51_Internal_EEPROM.lss"
 	@echo 'Finished building: $@'
 	@echo ' '
 
-50_I2C_Master_App1.hex: 50_I2C_Master_App1.elf
+51_Internal_EEPROM.hex: 51_Internal_EEPROM.elf
 	@echo 'Create Flash image (ihex format)'
-	-avr-objcopy -R .eeprom -R .fuse -R .lock -R .signature -O ihex 50_I2C_Master_App1.elf  "50_I2C_Master_App1.hex"
+	-avr-objcopy -R .eeprom -R .fuse -R .lock -R .signature -O ihex 51_Internal_EEPROM.elf  "51_Internal_EEPROM.hex"
 	@echo 'Finished building: $@'
 	@echo ' '
 
-sizedummy: 50_I2C_Master_App1.elf
+sizedummy: 51_Internal_EEPROM.elf
 	@echo 'Invoking: Print Size'
-	-avr-size --format=avr --mcu=atmega32 50_I2C_Master_App1.elf
+	-avr-size --format=avr --mcu=atmega32 51_Internal_EEPROM.elf
 	@echo 'Finished building: $@'
 	@echo ' '
 
-avrdudedummy: 50_I2C_Master_App1.elf
+avrdudedummy: 51_Internal_EEPROM.elf
 	@echo 'Invoking: AVRDude'
-	C:\WinAVR-20100110\bin\avrdude -pm32 -cusbasp -Uflash:w:50_I2C_Master_App1.hex:a
+	C:\WinAVR-20100110\bin\avrdude -pm32 -cusbasp -Uflash:w:51_Internal_EEPROM.hex:a
 	@echo 'Finished building: $@'
 	@echo ' '
 
 # Other Targets
 clean:
-	-$(RM) $(FLASH_IMAGE)$(ELFS)$(OBJS)$(ASM_DEPS)$(AVRDUDEDUMMY)$(S_DEPS)$(SIZEDUMMY)$(S_UPPER_DEPS)$(LSS)$(C_DEPS) 50_I2C_Master_App1.elf
+	-$(RM) $(FLASH_IMAGE)$(ELFS)$(OBJS)$(ASM_DEPS)$(AVRDUDEDUMMY)$(S_DEPS)$(SIZEDUMMY)$(S_UPPER_DEPS)$(LSS)$(C_DEPS) 51_Internal_EEPROM.elf
 	-@echo ' '
 
 secondary-outputs: $(LSS) $(FLASH_IMAGE) $(SIZEDUMMY) $(AVRDUDEDUMMY)
 
 .PHONY: all clean dependents
-.SECONDARY:
 
 -include ../makefile.targets

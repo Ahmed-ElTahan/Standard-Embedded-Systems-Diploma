@@ -4,15 +4,24 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
+../DADC.c \
 ../DDIO.c \
+../HLCD.c \
+../SLCD_WriteDecimal.c \
 ../main.c 
 
 OBJS += \
+./DADC.o \
 ./DDIO.o \
+./HLCD.o \
+./SLCD_WriteDecimal.o \
 ./main.o 
 
 C_DEPS += \
+./DADC.d \
 ./DDIO.d \
+./HLCD.d \
+./SLCD_WriteDecimal.d \
 ./main.d 
 
 

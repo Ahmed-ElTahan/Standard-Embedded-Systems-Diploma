@@ -1,5 +1,11 @@
+
 /*
- * main.c
+
+
+
+
+
+* main.c
  *
  *  Created on: Aug 19, 2017
  *      Author: Ahmed A. Eltahan
@@ -10,12 +16,14 @@
 	Programming Project by USBasp kit using AVR Dude to:
 */
 
+
+
 // Libraries
 
 #define F_CPU 8000000 // to define the crystal value (frequency used to set the time correctly). F_CPU is the variable inside delay.h which defines the frequency used.
 #include<avr/delay.h> // Convenience functions for busy-wait delay loops: milliseconds: _delay_ms();, microseconds: _delay)_us();
+//#include<util/twi.h>
 #include<avr/io.h>
-
 // User-defined header files #include
 #include"DDIO.h" // This header file includes the appropriate IO definitions for the device that has been specified by the -MCU= compiler command-line switch.
 
@@ -24,13 +32,9 @@
 
 // User Data Type definition
 // Function prototype
-void TWI_Master_Init(void);
-void TWI_Master_Start(void);
-void TWI_Master_Write_Addr(u8 Slave_Addr);
-void TWI_Master_Write_Data(u8 Master_Data);
-void TWI_Master_Stop(void);
-
-
+void TWI_Slave_Init(u8 Slave_Addr);
+void TWI_Slave_Match_ACK(void);
+u8 TWI_Slave_Read_Data(void);
 
 // Declared Structures (if Type definition)
 // Declared Functions
@@ -45,28 +49,28 @@ void main(void)
 		// Program Variables
 
 		// Pin Direction (Input/Output)
-
+		DDRB = 0xFF;
 		// Pin Values (initialization)
 		// Module Initialization
-		TWI_Master_Init();
+		TWI_Slave_Init(0x20);
 
-
-
-		// After Send
+		u8 data;
 
 
 	while(1)
 	{
 		// Write your instructions here.
+		TWI_Slave_Match_ACK();
+		data = TWI_Slave_Read_Data();
+		if(data == 'A')
+		{
+			SetPinValue(8, HIGH);
+		}
+		else
+		{
+			SetPinValue(9, HIGH);
+		}
 
-		TWI_Master_Start();
-		_delay_ms(1000);
-		TWI_Master_Write_Addr(0x20);
-		_delay_ms(1000);
-		TWI_Master_Write_Data('A');
-		_delay_ms(1000);
-		TWI_Master_Stop();
-		_delay_ms(1000);
 
 
 
@@ -74,47 +78,39 @@ void main(void)
 
 	// Don't Add anything here (will not be executed)
 }
-void TWI_Master_Init(void)
+void TWI_Slave_Init(u8 Slave_Addr)
 {
-	TWBR = 0x00; // clear bit rate register
-	TWBR = 0x0C; // set bit rate
+	 TWAR = Slave_Addr;
 }
-void TWI_Master_Start(void)
+
+void TWI_Slave_Match_ACK(void)
 {
+	while((TWSR &(0xF8)) != 0x60)
+	{
+		SET_BIT(TWCR, TWEN);
+		SET_BIT(TWCR, TWEA);
+		SET_BIT(TWCR, TWINT);
+
+		while(GET_BIT(TWCR, TWINT) == 0);
+
+	}
+
+}
+
+u8 TWI_Slave_Read_Data(void)
+{
+	u8 x;
+
 	SET_BIT(TWCR, TWEN);
-	SET_BIT(TWCR, TWSTA);
+	SET_BIT(TWCR, TWEA);
 	SET_BIT(TWCR, TWINT);
 
 	while(GET_BIT(TWCR, TWINT) == 0);
-	while((TWSR & (0xF8)) != 0x08);
-}
+	while((TWSR &(0xF8)) != 0x80);
 
-void TWI_Master_Write_Addr(u8 Slave_Addr)
-{
-	TWDR = Slave_Addr;
-	SET_BIT(TWCR, TWEN);
-	SET_BIT(TWCR, TWINT);
-
-	while(GET_BIT(TWCR, TWINT) == 0);
-	while((TWSR & (0xF8)) != 0x18);
+	x = TWDR;
+	return x;
 
 }
 
-void TWI_Master_Write_Data(u8 Master_Data)
-{
-	TWDR = Master_Data;
-	SET_BIT(TWCR, TWEN);
-	SET_BIT(TWCR, TWINT);
-
-	while(GET_BIT(TWCR, TWINT) == 0);
-	while((TWSR & (0xF8)) != 0x28);
-
-}
-
-void TWI_Master_Stop(void)
-{
-	TWCR = (1<<TWINT)|(1<<TWEN)|(1<<TWSTO);
-
-
-}
 
