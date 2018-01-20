@@ -1,6 +1,7 @@
 # Standard-Embedded-Systems-Diploma
 
 Course Achievements
+
 •	Learned C programming and data structures algorithms including: variables, operators, conditional statements, loops, functions, arrays, pointer, data modifiers, preprocessor directives, and dynamic memory allocation and created +80 C files.
 •	Identified Software Engineering Testing Fundamentals (Project Life Cycle, Software Development Plans, The Seven Testing Principles, Software Quality Characteristics, and Black and White Box Testing).
 •	 Identified Embedded System Concepts (Types, Challenges, SB and SOC, MCU Parts (Processor, Memory, and other peripherals)).
